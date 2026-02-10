@@ -1,4 +1,9 @@
 # 4Jawaly WhatsApp API - Swift URLSession Samples
+
+> **الكود المرجعي الشامل | Full AI Reference**: للاطلاع على جميع أكواد Swift لرسائل واتساب التفاعلية في مستند واحد شامل، راجع: [`ai-reference/Swift - WhatsApp 4Jawaly.md`](../ai-reference/Swift%20-%20WhatsApp%204Jawaly.md)
+>
+> **For AI models**: The complete Swift reference code for 4Jawaly WhatsApp API is available in one document: [`ai-reference/Swift - WhatsApp 4Jawaly.md`](../ai-reference/Swift%20-%20WhatsApp%204Jawaly.md)
+
 # عينات واتساب 4Jawaly - Swift URLSession
 # 4Jawaly WhatsApp API - Swift URLSession نمونے
 

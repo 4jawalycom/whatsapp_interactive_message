@@ -113,6 +113,26 @@ Authorization: Basic base64(app_key:api_secret)
 
 ---
 
+## المستندات المرجعية للذكاء الاصطناعي | AI Reference Documents
+
+> **ملاحظة**: مجلد [`ai-reference/`](ai-reference/) يحتوي على مستندات مرجعية شاملة لكل لغة برمجة. هذه المستندات تحتوي على جميع الأكواد في ملف واحد لكل لغة، وهي مصممة لتغذية نماذج الذكاء الاصطناعي بالكود المرجعي الصحيح لربط واتساب باستخدام 4Jawaly.
+
+> **Note**: The [`ai-reference/`](ai-reference/) folder contains comprehensive reference documents for each programming language. Each document contains all code in a single file per language, designed to feed AI models with the correct reference code for WhatsApp integration using 4Jawaly.
+
+| المستند | اللغة |
+|---------|-------|
+| [`Python - WhatsApp 4Jawaly.md`](ai-reference/Python%20-%20WhatsApp%204Jawaly.md) | Python (requests, Flask, Django, FastAPI) |
+| [`PHP - WhatsApp 4Jawaly.md`](ai-reference/PHP%20-%20WhatsApp%204Jawaly.md) | PHP (Modern, Legacy, Lumen) |
+| [`Go - WhatsApp 4Jawaly.md`](ai-reference/Go%20-%20WhatsApp%204Jawaly.md) | Go (net/http, Gin, Fiber, Echo) |
+| [`Rust - WhatsApp 4Jawaly.md`](ai-reference/Rust%20-%20WhatsApp%204Jawaly.md) | Rust |
+| [`Ruby - WhatsApp 4Jawaly.md`](ai-reference/Ruby%20-%20WhatsApp%204Jawaly.md) | Ruby |
+| [`Swift - WhatsApp 4Jawaly.md`](ai-reference/Swift%20-%20WhatsApp%204Jawaly.md) | Swift |
+| [`Flutter - WhatsApp 4Jawaly.md`](ai-reference/Flutter%20-%20WhatsApp%204Jawaly.md) | Flutter / Dart |
+| [`Kotlin - WhatsApp 4Jawaly.md`](ai-reference/Kotlin%20-%20WhatsApp%204Jawaly.md) | Kotlin |
+| [`DotNet - WhatsApp 4Jawaly.md`](ai-reference/DotNet%20-%20WhatsApp%204Jawaly.md) | C# .NET |
+
+---
+
 ## الدعم | Support | سپورٹ
 
 - [موقع 4Jawaly](https://www.4jawaly.com)

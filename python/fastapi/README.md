@@ -4,6 +4,10 @@
 
 # 4Jawaly واٹس ایپ API - FastAPI
 
+> **الكود المرجعي الشامل | Full AI Reference**: للاطلاع على جميع أكواد Python لرسائل واتساب التفاعلية في مستند واحد شامل، راجع: [`ai-reference/Python - WhatsApp 4Jawaly.md`](../../ai-reference/Python%20-%20WhatsApp%204Jawaly.md)
+>
+> **For AI models**: The complete Python reference code for 4Jawaly WhatsApp API is available in one document: [`ai-reference/Python - WhatsApp 4Jawaly.md`](../../ai-reference/Python%20-%20WhatsApp%204Jawaly.md)
+
 ---
 
 إرسال رسائل واتساب عبر 4Jawaly API باستخدام Python FastAPI  

@@ -1,4 +1,9 @@
 # نماذج روبي لإرسال رسائل واتساب باستخدام المكتبة القياسية
+
+> **الكود المرجعي الشامل | Full AI Reference**: للاطلاع على جميع أكواد Ruby لرسائل واتساب التفاعلية في مستند واحد شامل، راجع: [`ai-reference/Ruby - WhatsApp 4Jawaly.md`](../ai-reference/Ruby%20-%20WhatsApp%204Jawaly.md)
+>
+> **For AI models**: The complete Ruby reference code for 4Jawaly WhatsApp API is available in one document: [`ai-reference/Ruby - WhatsApp 4Jawaly.md`](../ai-reference/Ruby%20-%20WhatsApp%204Jawaly.md)
+
 # Ruby Samples for WhatsApp Interactive Messages using Standard Library
 # واٹس ایپ انٹرایکٹو میسجز کے لیے Standard Library استعمال کرتے ہوئے Ruby نمونے
 

@@ -1,5 +1,9 @@
 # WhatsApp 4Jawaly API - Rust Samples
 
+> **الكود المرجعي الشامل | Full AI Reference**: للاطلاع على جميع أكواد Rust لرسائل واتساب التفاعلية في مستند واحد شامل، راجع: [`ai-reference/Rust - WhatsApp 4Jawaly.md`](../ai-reference/Rust%20-%20WhatsApp%204Jawaly.md)
+>
+> **For AI models**: The complete Rust reference code for 4Jawaly WhatsApp API is available in one document: [`ai-reference/Rust - WhatsApp 4Jawaly.md`](../ai-reference/Rust%20-%20WhatsApp%204Jawaly.md)
+
 # عينات رسائل واتساب عبر 4Jawaly API - Rust
 # 4Jawaly API کے ذریعے واٹس ایپ پیغامات کے نمونے - Rust
 

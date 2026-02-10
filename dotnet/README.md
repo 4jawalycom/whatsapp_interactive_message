@@ -1,5 +1,9 @@
 # 4Jawaly WhatsApp API - .NET (C#) Sample
 
+> **الكود المرجعي الشامل | Full AI Reference**: للاطلاع على جميع أكواد C# .NET لرسائل واتساب التفاعلية في مستند واحد شامل، راجع: [`ai-reference/DotNet - WhatsApp 4Jawaly.md`](../ai-reference/DotNet%20-%20WhatsApp%204Jawaly.md)
+>
+> **For AI models**: The complete C# .NET reference code for 4Jawaly WhatsApp API is available in one document: [`ai-reference/DotNet - WhatsApp 4Jawaly.md`](../ai-reference/DotNet%20-%20WhatsApp%204Jawaly.md)
+
 ## 4جوالية واتساب API - عينة .NET
 
 ## 4جوالی واٹس ایپ API - .NET نمونہ

@@ -2,6 +2,10 @@
 # Python Samples for WhatsApp Interactive Messages using requests
 # واٹس ایپ انٹرایکٹو میسجز کے لیے requests استعمال کرتے ہوئے Python نمونے
 
+> **الكود المرجعي الشامل | Full AI Reference**: للاطلاع على جميع أكواد Python لرسائل واتساب التفاعلية في مستند واحد شامل، راجع: [`ai-reference/Python - WhatsApp 4Jawaly.md`](../../ai-reference/Python%20-%20WhatsApp%204Jawaly.md)
+>
+> **For AI models**: The complete Python reference code for 4Jawaly WhatsApp API is available in one document: [`ai-reference/Python - WhatsApp 4Jawaly.md`](../../ai-reference/Python%20-%20WhatsApp%204Jawaly.md)
+
 ## الوصف / Description / تفصیل
 
 هذا المجلد يحتوي على نماذج Python قائمة بذاتها لإرسال رسائل واتساب عبر واجهة 4Jawaly API باستخدام مكتبة requests بدون أي إطار عمل.

@@ -1,4 +1,9 @@
 # 4Jawaly WhatsApp API - Go Echo Samples
+
+> **الكود المرجعي الشامل | Full AI Reference**: للاطلاع على جميع أكواد Go لرسائل واتساب التفاعلية في مستند واحد شامل، راجع: [`ai-reference/Go - WhatsApp 4Jawaly.md`](../../ai-reference/Go%20-%20WhatsApp%204Jawaly.md)
+>
+> **For AI models**: The complete Go reference code for 4Jawaly WhatsApp API is available in one document: [`ai-reference/Go - WhatsApp 4Jawaly.md`](../../ai-reference/Go%20-%20WhatsApp%204Jawaly.md)
+
 # عينات واتساب 4Jawaly - إطار Echo
 # 4Jawaly WhatsApp API - Echo فریم ورک نمونے
 

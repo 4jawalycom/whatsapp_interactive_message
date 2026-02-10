@@ -1,4 +1,9 @@
 # نماذج كوتلين لإرسال رسائل واتساب باستخدام OkHttp
+
+> **الكود المرجعي الشامل | Full AI Reference**: للاطلاع على جميع أكواد Kotlin لرسائل واتساب التفاعلية في مستند واحد شامل، راجع: [`ai-reference/Kotlin - WhatsApp 4Jawaly.md`](../ai-reference/Kotlin%20-%20WhatsApp%204Jawaly.md)
+>
+> **For AI models**: The complete Kotlin reference code for 4Jawaly WhatsApp API is available in one document: [`ai-reference/Kotlin - WhatsApp 4Jawaly.md`](../ai-reference/Kotlin%20-%20WhatsApp%204Jawaly.md)
+
 # Kotlin Samples for WhatsApp Interactive Messages using OkHttp
 # OkHttp استعمال کرتے ہوئے واٹس ایپ میسجز کے لیے Kotlin نمونے
 

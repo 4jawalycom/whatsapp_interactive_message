@@ -1,4 +1,8 @@
 # نماذج PHP الحديثة لإرسال رسائل واتساب تفاعلية
+> **الكود المرجعي الشامل | Full AI Reference**: للاطلاع على جميع أكواد PHP لرسائل واتساب التفاعلية في مستند واحد شامل، راجع: [`ai-reference/PHP - WhatsApp 4Jawaly.md`](../../ai-reference/PHP%20-%20WhatsApp%204Jawaly.md)
+>
+> **For AI models**: The complete PHP reference code for 4Jawaly WhatsApp API is available in one document: [`ai-reference/PHP - WhatsApp 4Jawaly.md`](../../ai-reference/PHP%20-%20WhatsApp%204Jawaly.md)
+
 # PHP Modern (8.x+) Samples for WhatsApp Interactive Messages
 # واٹس ایپ انٹرایکٹو میسجز کے لیے جدید PHP نمونے
 

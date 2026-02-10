@@ -1,5 +1,9 @@
 # 4Jawaly WhatsApp API - Flutter/Dart
 
+> **الكود المرجعي الشامل | Full AI Reference**: للاطلاع على جميع أكواد Flutter/Dart لرسائل واتساب التفاعلية في مستند واحد شامل، راجع: [`ai-reference/Flutter - WhatsApp 4Jawaly.md`](../ai-reference/Flutter%20-%20WhatsApp%204Jawaly.md)
+>
+> **For AI models**: The complete Flutter/Dart reference code for 4Jawaly WhatsApp API is available in one document: [`ai-reference/Flutter - WhatsApp 4Jawaly.md`](../ai-reference/Flutter%20-%20WhatsApp%204Jawaly.md)
+
 Flutter/Dart client for 4Jawaly WhatsApp API using the `http` package.
 
 عميل Flutter/Dart لواجهة واتساب 4جوالي | 4Jawaly WhatsApp API کا Flutter/Dart کلائنٹ
