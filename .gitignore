@@ -1,0 +1,9 @@
+.DS_Store
+.claude/
+*.pyc
+__pycache__/
+rust/target/
+kotlin/.gradle/
+flutter/.dart_tool/
+dotnet/bin/
+dotnet/obj/

@@ -1,0 +1,9 @@
+name: whatsapp_4jawaly
+description: 4Jawaly WhatsApp API Flutter/Dart client - عميل واتساب 4جوالي - 4Jawaly WhatsApp API کا Flutter/Dart کلائنٹ
+version: 1.0.0
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  http: ^1.1.0

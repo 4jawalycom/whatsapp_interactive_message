@@ -1,0 +1,3 @@
+# متطلبات Django - Django requirements - Django کی ضروریات
+Django>=5.0.0
+requests>=2.31.0
