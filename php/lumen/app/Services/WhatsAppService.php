@@ -265,4 +265,79 @@ class WhatsAppService
             ],
         ]);
     }
+
+    /**
+     * إرسال طلب مسار مخصص - Send custom path request - مخصوص path درخواست بھیجیں
+     * يستخدمه الموقع وجهة الاتصال (هيكل مختلف عن global)
+     * Used by location and contact (different structure than global)
+     *
+     * @param string $path مسار الـ API - API path - API path
+     * @param array $params المعاملات - Parameters - پیرامیٹرز
+     * @return array
+     */
+    private function sendCustomPathRequest(string $path, array $params): array
+    {
+        $payload = [
+            'path' => $path,
+            'params' => $params,
+        ];
+
+        try {
+            $response = $this->client->post('', [
+                'json' => $payload,
+            ]);
+            $body = (string) $response->getBody();
+            return json_decode($body, true) ?? ['raw' => $body];
+        } catch (GuzzleException $e) {
+            return [
+                'error' => true,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+            ];
+        }
+    }
+
+    /**
+     * إرسال موقع جغرافي - Send location - مقام بھیجیں
+     *
+     * @param string $recipient رقم المستلم - Recipient number - وصول کنندہ کا نمبر
+     * @param float $lat خط العرض - Latitude - عرض البلد
+     * @param float $lng خط الطول - Longitude - طول البلد
+     * @param string $address العنوان - Address - پتہ
+     * @param string|null $name اسم الموقع - Location name - مقام کا نام
+     * @return array
+     */
+    public function sendLocation(
+        string $recipient,
+        float $lat,
+        float $lng,
+        string $address,
+        ?string $name = null
+    ): array {
+        $params = [
+            'phone' => $recipient,
+            'lat' => $lat,
+            'lng' => $lng,
+            'address' => $address,
+        ];
+        if ($name !== null) {
+            $params['name'] = $name;
+        }
+        return $this->sendCustomPathRequest('message/location', $params);
+    }
+
+    /**
+     * إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+     *
+     * @param string $recipient رقم المستلم - Recipient number - وصول کنندہ کا نمبر
+     * @param array $contacts مصفوفة جهات الاتصال - Contacts array - رابطے کا سرے
+     * @return array
+     */
+    public function sendContact(string $recipient, array $contacts): array
+    {
+        return $this->sendCustomPathRequest('message/contact', [
+            'phone' => $recipient,
+            'contacts' => $contacts,
+        ]);
+    }
 }

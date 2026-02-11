@@ -5,18 +5,22 @@
 mod api;
 mod send_audio;
 mod send_buttons;
+mod send_contact;
 mod send_document;
 mod send_image;
 mod send_list;
+mod send_location;
 mod send_text;
 mod send_video;
 
 use api::Config;
 use send_audio::send_audio;
 use send_buttons::send_buttons;
+use send_contact::send_contact;
 use send_document::send_document;
 use send_image::send_image;
 use send_list::{send_list, ListRow, ListSection};
+use send_location::send_location;
 use send_text::send_text;
 use send_video::send_video;
 
@@ -121,6 +125,31 @@ fn main() {
         Some("وصف المستند"),
         Some("document.pdf"),
     ) {
+        eprintln!("خطأ / Error / خرابی: {}", e);
+    }
+
+    println!("\n=== 8. إرسال موقع جغرافي / Location / مقام ===\n");
+    if let Err(e) = send_location(
+        &config,
+        recipient,
+        24.7136,
+        46.6753,
+        "Riyadh, Saudi Arabia",
+        "My Office",
+    ) {
+        eprintln!("خطأ / Error / خرابی: {}", e);
+    }
+
+    println!("\n=== 9. إرسال جهة اتصال / Contact / رابطہ ===\n");
+    let contacts = vec![serde_json::json!({
+        "name": {
+            "formatted_name": "Ahmed Ali",
+            "first_name": "Ahmed",
+            "last_name": "Ali"
+        },
+        "phones": [{"phone": "+966501234567", "type": "CELL"}]
+    })];
+    if let Err(e) = send_contact(&config, recipient, &contacts) {
         eprintln!("خطأ / Error / خرابی: {}", e);
     }
 

@@ -28,6 +28,51 @@ class WhatsAppService {
     required this.projectId,
   });
 
+  /// Make custom path API request - طلب API مع مسار مخصص - کسٹم پاتھ API درخواست
+  /// Used for location/contact - different structure (path + direct params)
+  /// [path] API path (e.g. message/location, message/contact) - المسار - API پاتھ
+  /// [params] Direct params object - المعاملات المباشرة - براہ راست پیرامیٹرز
+  Future<Map<String, dynamic>> _makeCustomPathRequest(
+    String path,
+    Map<String, dynamic> params,
+  ) async {
+    try {
+      final credentials = base64Encode(utf8.encode('$appKey:$apiSecret'));
+      final authHeader = 'Basic $credentials';
+
+      final body = {'path': path, 'params': params};
+
+      final url = Uri.parse('$_baseUrl/$projectId');
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authHeader,
+        },
+        body: jsonEncode(body),
+      );
+
+      dynamic parsedBody;
+      try {
+        parsedBody = response.body.isEmpty
+            ? <String, dynamic>{}
+            : jsonDecode(response.body);
+      } catch (_) {
+        parsedBody = {'raw': response.body};
+      }
+
+      return {
+        'statusCode': response.statusCode,
+        'body': parsedBody,
+      };
+    } catch (e) {
+      return {
+        'error': true,
+        'message': e.toString(),
+      };
+    }
+  }
+
   /// Make authenticated API request - تنفيذ طلب API مصادق عليه - تصدیق شدہ API درخواست
   /// [data] Request payload - بيانات الطلب - درخواست کا پے لوڈ
   Future<Map<String, dynamic>> _makeRequest(Map<String, dynamic> data) async {
@@ -232,5 +277,42 @@ class WhatsAppService {
       },
     };
     return _makeRequest(data);
+  }
+
+  /// Send location - إرسال موقع جغرافي - مقام بھیجیں
+  /// [to] Recipient phone - رقم المستلم - ٹیلی فون نمبر
+  /// [lat] Latitude - خط العرض - عرض البلد
+  /// [lng] Longitude - خط الطول - طول البلد
+  /// [address] Optional address - العنوان - پتہ (اختیاری)
+  /// [name] Optional name - الاسم - نام (اختیاری)
+  Future<Map<String, dynamic>> sendLocation(
+    String to,
+    double lat,
+    double lng, {
+    String? address,
+    String? name,
+  }) async {
+    final params = <String, dynamic>{
+      'phone': to,
+      'lat': lat,
+      'lng': lng,
+    };
+    if (address != null) params['address'] = address;
+    if (name != null) params['name'] = name;
+    return _makeCustomPathRequest('message/location', params);
+  }
+
+  /// Send contact - إرسال جهة اتصال - رابطہ بھیجیں
+  /// [to] Recipient phone - رقم المستلم - ٹیلی فون نمبر
+  /// [contacts] List of contact objects - قائمة جهات الاتصال - رابطوں کی فہرست
+  Future<Map<String, dynamic>> sendContact(
+    String to,
+    List<Map<String, dynamic>> contacts,
+  ) async {
+    final params = {
+      'phone': to,
+      'contacts': contacts,
+    };
+    return _makeCustomPathRequest('message/contact', params);
   }
 }

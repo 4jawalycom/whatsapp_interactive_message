@@ -161,3 +161,48 @@ def send_document(request):
     if result.get("error"):
         return JsonResponse(result, status=result.get("status_code", 500))
     return JsonResponse(result)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def send_location(request):
+    """
+    إرسال موقع جغرافي - Send location - مقام بھیجیں
+    Body: {"to":"9665XXXXXXXX","lat":24.7136,"lng":46.6753,"address":"Riyadh","name":"My Office"}
+    """
+    data = _parse_json(request)
+    to = data.get("to")
+    lat = data.get("lat")
+    lng = data.get("lng")
+    address = data.get("address", "")
+    name = data.get("name")
+    if not to or lat is None or lng is None or not address:
+        return JsonResponse(
+            {"error": True, "message": "Missing 'to', 'lat', 'lng', or 'address' field"},
+            status=400,
+        )
+    result = service.send_location(to, float(lat), float(lng), address, name)
+    if result.get("error"):
+        return JsonResponse(result, status=result.get("status_code", 500))
+    return JsonResponse(result)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def send_contact(request):
+    """
+    إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+    Body: {"to":"9665XXXXXXXX","contacts":[{"name":{"formatted_name":"...","first_name":"...","last_name":"..."},"phones":[{"phone":"+966...","type":"CELL"}]}]}
+    """
+    data = _parse_json(request)
+    to = data.get("to")
+    contacts = data.get("contacts", [])
+    if not to or not contacts:
+        return JsonResponse(
+            {"error": True, "message": "Missing 'to' or 'contacts' field"},
+            status=400,
+        )
+    result = service.send_contact(to, contacts)
+    if result.get("error"):
+        return JsonResponse(result, status=result.get("status_code", 500))
+    return JsonResponse(result)

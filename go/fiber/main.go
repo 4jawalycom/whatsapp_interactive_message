@@ -191,6 +191,61 @@ func main() {
 		return c.Status(status).JSON(fiber.Map{"status": status, "response": body})
 	})
 
+	// POST /whatsapp/location - إرسال موقع جغرافي - مقام بھیجیں
+	app.Post("/whatsapp/location", func(c *fiber.Ctx) error {
+		var req struct {
+			To      string  `json:"to"`
+			Lat     float64 `json:"lat"`
+			Lng     float64 `json:"lng"`
+			Address string  `json:"address"`
+			Name    string  `json:"name"`
+		}
+		if err := c.BodyParser(&req); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		}
+		if req.Address == "" {
+			req.Address = "Riyadh, Saudi Arabia"
+		}
+		if req.Name == "" {
+			req.Name = "My Office"
+		}
+		status, body, err := svc.SendLocation(req.To, req.Lat, req.Lng, req.Address, req.Name)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.Status(status).JSON(fiber.Map{"status": status, "response": body})
+	})
+
+	// POST /whatsapp/contact - إرسال جهة اتصال - رابطہ بھیجیں
+	app.Post("/whatsapp/contact", func(c *fiber.Ctx) error {
+		var req struct {
+			To       string                   `json:"to"`
+			Contacts []map[string]interface{} `json:"contacts"`
+		}
+		if err := c.BodyParser(&req); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		}
+		if len(req.Contacts) == 0 {
+			req.Contacts = []map[string]interface{}{
+				{
+					"name": map[string]string{
+						"formatted_name": "Ahmed Ali",
+						"first_name":     "Ahmed",
+						"last_name":      "Ali",
+					},
+					"phones": []map[string]interface{}{
+						{"phone": "+966501234567", "type": "CELL"},
+					},
+				},
+			}
+		}
+		status, body, err := svc.SendContact(req.To, req.Contacts)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.Status(status).JSON(fiber.Map{"status": status, "response": body})
+	})
+
 	port := getEnv("PORT", "8080")
 	app.Listen(":" + port)
 }

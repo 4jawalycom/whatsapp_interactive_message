@@ -95,4 +95,32 @@ void main() async {
     filename: 'document.pdf',
   );
   print('Document: $docResult');
+
+  // 8. Send location - إرسال موقع جغرافي - مقام بھیجیں
+  final locationResult = await whatsapp.sendLocation(
+    to,
+    24.7136,
+    46.6753,
+    address: 'Riyadh, Saudi Arabia',
+    name: 'My Office',
+  );
+  print('Location: $locationResult');
+
+  // 9. Send contact - إرسال جهة اتصال - رابطہ بھیجیں
+  final contactResult = await whatsapp.sendContact(
+    to,
+    [
+      {
+        'name': {
+          'formatted_name': 'Ahmed Ali',
+          'first_name': 'Ahmed',
+          'last_name': 'Ali',
+        },
+        'phones': [
+          {'phone': '+966501234567', 'type': 'CELL'},
+        ],
+      },
+    ],
+  );
+  print('Contact: $contactResult');
 }

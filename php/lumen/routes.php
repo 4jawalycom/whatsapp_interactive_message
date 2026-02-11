@@ -72,3 +72,21 @@ $router->post('/whatsapp/audio', [
 $router->post('/whatsapp/document', [
     'uses' => [WhatsAppController::class, 'sendDocument'],
 ]);
+
+/*
+|--------------------------------------------------------------------------
+| POST /whatsapp/location - إرسال موقع جغرافي - Send location - مقام بھیجیں
+|--------------------------------------------------------------------------
+*/
+$router->post('/whatsapp/location', [
+    'uses' => [WhatsAppController::class, 'sendLocation'],
+]);
+
+/*
+|--------------------------------------------------------------------------
+| POST /whatsapp/contact - إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+|--------------------------------------------------------------------------
+*/
+$router->post('/whatsapp/contact', [
+    'uses' => [WhatsAppController::class, 'sendContact'],
+]);

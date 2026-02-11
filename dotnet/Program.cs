@@ -1,6 +1,7 @@
 // Main entry point / نقطة الدخول الرئيسية / مین انٹری پوائنٹ
 // 4Jawaly WhatsApp API - .NET Sample / مثال واتساب 4جوالية / 4جوالی واٹس ایپ نمونہ
 
+using System.Text.Json.Nodes;
 using WhatsApp4Jawaly;
 
 // === تكوين / Configuration / کنفیگریشن ===
@@ -67,6 +68,39 @@ try
         caption: "وصف المستند",
         filename: "document.pdf");
     Console.WriteLine($"[Document] {documentResponse}");
+
+    // 8. إرسال موقع جغرافي / Send location / مقام بھیجیں
+    var locationResponse = await service.SendLocationAsync(
+        Recipient,
+        24.7136,
+        46.6753,
+        address: "Riyadh, Saudi Arabia",
+        name: "My Office");
+    Console.WriteLine($"[Location] {locationResponse}");
+
+    // 9. إرسال جهة اتصال / Send contact / رابطہ بھیجیں
+    var contacts = new JsonArray
+    {
+        new JsonObject
+        {
+            ["name"] = new JsonObject
+            {
+                ["formatted_name"] = "Ahmed Ali",
+                ["first_name"] = "Ahmed",
+                ["last_name"] = "Ali"
+            },
+            ["phones"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["phone"] = "+966501234567",
+                    ["type"] = "CELL"
+                }
+            }
+        }
+    };
+    var contactResponse = await service.SendContactAsync(Recipient, contacts);
+    Console.WriteLine($"[Contact] {contactResponse}");
 }
 catch (Exception ex)
 {

@@ -69,6 +69,23 @@ class WhatsAppService:
         except ValueError:
             return {"error": True, "message": "Invalid JSON response", "status_code": 500}
 
+    def _send_custom_path_request(self, path: str, params: dict) -> dict:
+        """
+        إرسال طلب مسار مخصص - Send custom path request - مخصوص path درخواست بھیجیں
+        يستخدمه الموقع وجهة الاتصال (هيكل مختلف عن global)
+        Used by location and contact (different structure than global)
+        """
+        payload = {"path": path, "params": params}
+        try:
+            response = requests.post(
+                self.base_url, json=payload, headers=self.headers, timeout=30
+            )
+            return {"status_code": response.status_code, "data": response.json()}
+        except requests.exceptions.RequestException as e:
+            return {"error": True, "message": str(e), "status_code": 500}
+        except ValueError:
+            return {"error": True, "message": "Invalid JSON response", "status_code": 500}
+
     def send_text(self, recipient: str, body: str) -> dict:
         """
         إرسال رسالة نصية - Send text message - ٹیکسٹ پیغام بھیجیں
@@ -184,4 +201,34 @@ class WhatsAppService:
             doc["filename"] = filename
         return self._send_request(
             {"to": recipient, "payload": {"type": "document", "document": doc}}
+        )
+
+    def send_location(
+        self,
+        recipient: str,
+        lat: float,
+        lng: float,
+        address: str,
+        name: Optional[str] = None,
+    ) -> dict:
+        """
+        إرسال موقع جغرافي - Send location - مقام بھیجیں
+        """
+        params = {
+            "phone": recipient,
+            "lat": lat,
+            "lng": lng,
+            "address": address,
+        }
+        if name:
+            params["name"] = name
+        return self._send_custom_path_request("message/location", params)
+
+    def send_contact(self, recipient: str, contacts: list[dict]) -> dict:
+        """
+        إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+        contacts: [{"name":{"formatted_name":"...","first_name":"...","last_name":"..."},"phones":[{"phone":"+966...","type":"CELL"}]}]
+        """
+        return self._send_custom_path_request(
+            "message/contact", {"phone": recipient, "contacts": contacts}
         )

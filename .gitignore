@@ -7,3 +7,4 @@ kotlin/.gradle/
 flutter/.dart_tool/
 dotnet/bin/
 dotnet/obj/
+rust/Cargo.lock

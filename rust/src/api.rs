@@ -86,3 +86,48 @@ pub fn make_api_call(config: &Config, data: Value) -> Result<(), Box<dyn std::er
 
     Ok(())
 }
+
+/// إرسال طلب بمسار مخصص (location/contact)
+/// Send request with custom path - path differs from global messages
+/// مخصوص path کے ساتھ درخواست بھیجیں - location/contact مختلف structure استعمال کرتے ہیں
+pub fn make_custom_path_api_call(
+    config: &Config,
+    path: &str,
+    params: serde_json::Value,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let url = config.base_url();
+    let auth = config.auth_header();
+
+    // بناء الجسم: path + params مباشرة (بدون url/method/data)
+    // Build body: path + params directly (no url/method/data wrapper)
+    let payload = serde_json::json!({
+        "path": path,
+        "params": params
+    });
+
+    let client = Client::new();
+    let response = client
+        .post(&url)
+        .header("Content-Type", "application/json")
+        .header("Authorization", &auth)
+        .json(&payload)
+        .send()?;
+
+    let status = response.status();
+    let body = response.text()?;
+
+    println!(
+        "رمز الاستجابة / Response code / جوابی کوڈ: {}",
+        status
+    );
+
+    match serde_json::from_str::<Value>(&body) {
+        Ok(parsed) => println!(
+            "\nالاستجابة / Response / جواب:\n{}",
+            serde_json::to_string_pretty(&parsed).unwrap_or_default()
+        ),
+        Err(_) => println!("\nالنص الخام / Raw body / خام متن:\n{}", body),
+    }
+
+    Ok(())
+}

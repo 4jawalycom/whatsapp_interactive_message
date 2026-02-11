@@ -130,6 +130,47 @@ class DocumentRequest(BaseModel):
     filename: Optional[str] = Field(None, description="اسم الملف - Filename - فائل کا نام")
 
 
+class LocationRequest(BaseModel):
+    """طلب إرسال موقع جغرافي - Location request - مقام کی درخواست"""
+
+    to: str = Field(..., description="رقم المستلم - Recipient number - وصول کنندہ نمبر")
+    lat: float = Field(..., description="خط العرض - Latitude - عرض البلد")
+    lng: float = Field(..., description="خط الطول - Longitude - طول البلد")
+    address: str = Field(..., description="العنوان - Address - پتہ")
+    name: Optional[str] = Field(None, description="اسم الموقع - Location name - مقام کا نام")
+
+
+class ContactPhone(BaseModel):
+    """رقم هاتف في جهة الاتصال - Phone in contact - رابطہ میں فون نمبر"""
+
+    phone: str = Field(..., description="رقم الهاتف - Phone number - فون نمبر")
+    type: Optional[str] = Field("CELL", description="نوع الهاتف - Phone type - فون کی قسم")
+
+
+class ContactName(BaseModel):
+    """اسم جهة الاتصال - Contact name - رابطہ کا نام"""
+
+    formatted_name: str = Field(..., description="الاسم الكامل - Full name - مکمل نام")
+    first_name: str = Field(..., description="الاسم الأول - First name - پہلا نام")
+    last_name: str = Field(..., description="اسم العائلة - Last name - آخری نام")
+
+
+class ContactItem(BaseModel):
+    """جهة اتصال واحدة - Single contact - ایک رابطہ"""
+
+    name: ContactName = Field(..., description="الاسم - Name - نام")
+    phones: list[ContactPhone] = Field(..., description="أرقام الهواتف - Phone numbers - فون نمبرز")
+
+
+class ContactRequest(BaseModel):
+    """طلب إرسال جهة اتصال - Contact request - رابطہ کی درخواست"""
+
+    to: str = Field(..., description="رقم المستلم - Recipient number - وصول کنندہ نمبر")
+    contacts: list[ContactItem] = Field(
+        ..., min_length=1, description="جهات الاتصال - Contacts - رابطے"
+    )
+
+
 # --- Routes ---
 # المسارات - API endpoints
 
@@ -249,6 +290,49 @@ async def send_document(req: DocumentRequest):
     إرسال مستند - Send document - دستاویز بھیجیں
     """
     result = await service.send_document(req.to, req.link, req.caption, req.filename)
+    if result.get("error"):
+        raise HTTPException(
+            status_code=result.get("status_code", status.HTTP_500_INTERNAL_SERVER_ERROR),
+            detail=result.get("message", "API request failed"),
+        )
+    return result
+
+
+@app.post("/whatsapp/location")
+async def send_location(req: LocationRequest):
+    """
+    إرسال موقع جغرافي - Send location - مقام بھیجیں
+    """
+    result = await service.send_location(
+        req.to, req.lat, req.lng, req.address, req.name
+    )
+    if result.get("error"):
+        raise HTTPException(
+            status_code=result.get("status_code", status.HTTP_500_INTERNAL_SERVER_ERROR),
+            detail=result.get("message", "API request failed"),
+        )
+    return result
+
+
+@app.post("/whatsapp/contact")
+async def send_contact(req: ContactRequest):
+    """
+    إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+    """
+    contacts = []
+    for c in req.contacts:
+        phones = [{"phone": p.phone, "type": p.type or "CELL"} for p in c.phones]
+        contacts.append(
+            {
+                "name": {
+                    "formatted_name": c.name.formatted_name,
+                    "first_name": c.name.first_name,
+                    "last_name": c.name.last_name,
+                },
+                "phones": phones,
+            }
+        )
+    result = await service.send_contact(req.to, contacts)
     if result.get("error"):
         raise HTTPException(
             status_code=result.get("status_code", status.HTTP_500_INTERNAL_SERVER_ERROR),

@@ -172,3 +172,62 @@ func (s *WhatsAppService) SendDocument(to, link, caption, filename string) (int,
 	}
 	return s.sendRequest(data, to)
 }
+
+// sendCustomPathRequest - إرسال طلب بمسار مخصص (location/contact)
+// Send request with custom path - مخصوص path کے ساتھ درخواست بھیجیں
+func (s *WhatsAppService) sendCustomPathRequest(path string, params map[string]interface{}) (int, string, error) {
+	if params["phone"] == nil || params["phone"] == "" {
+		params["phone"] = s.recipient
+	}
+	payload := map[string]interface{}{
+		"path":   path,
+		"params": params,
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return 0, "", fmt.Errorf("json marshal: %w", err)
+	}
+	url := fmt.Sprintf("%s/%s", s.baseURL, s.projectID)
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	if err != nil {
+		return 0, "", fmt.Errorf("new request: %w", err)
+	}
+	auth := base64.StdEncoding.EncodeToString([]byte(s.appKey + ":" + s.apiSecret))
+	req.Header.Set("Authorization", "Basic "+auth)
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, "", fmt.Errorf("do request: %w", err)
+	}
+	defer resp.Body.Close()
+	respBody, _ := io.ReadAll(resp.Body)
+	return resp.StatusCode, string(respBody), nil
+}
+
+// SendLocation - إرسال موقع جغرافي - مقام بھیجیں
+func (s *WhatsAppService) SendLocation(to string, lat, lng float64, address, name string) (int, string, error) {
+	if to == "" {
+		to = s.recipient
+	}
+	params := map[string]interface{}{
+		"phone":   to,
+		"lat":     lat,
+		"lng":     lng,
+		"address": address,
+		"name":    name,
+	}
+	return s.sendCustomPathRequest("message/location", params)
+}
+
+// SendContact - إرسال جهة اتصال - رابطہ بھیجیں
+func (s *WhatsAppService) SendContact(to string, contacts []map[string]interface{}) (int, string, error) {
+	if to == "" {
+		to = s.recipient
+	}
+	params := map[string]interface{}{
+		"phone":    to,
+		"contacts": contacts,
+	}
+	return s.sendCustomPathRequest("message/contact", params)
+}

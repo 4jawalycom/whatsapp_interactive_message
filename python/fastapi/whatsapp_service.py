@@ -66,6 +66,26 @@ class WhatsAppService:
         except ValueError:
             return {"error": True, "message": "Invalid JSON response", "status_code": 500}
 
+    async def _send_custom_path_request(
+        self, path: str, params: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        إرسال طلب مسار مخصص - Send custom path request - مخصوص path درخواست بھیجیں
+        يستخدمه الموقع وجهة الاتصال (هيكل مختلف عن global)
+        Used by location and contact (different structure than global)
+        """
+        payload = {"path": path, "params": params}
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    self.base_url, json=payload, headers=self.headers
+                )
+                return {"status_code": response.status_code, "data": response.json()}
+        except httpx.RequestError as e:
+            return {"error": True, "message": str(e), "status_code": 500}
+        except ValueError:
+            return {"error": True, "message": "Invalid JSON response", "status_code": 500}
+
     async def send_text(self, recipient: str, body: str) -> dict[str, Any]:
         """
         إرسال رسالة نصية - Send text message - ٹیکسٹ پیغام بھیجیں
@@ -181,4 +201,36 @@ class WhatsAppService:
             doc["filename"] = filename
         return await self._send_request(
             {"to": recipient, "payload": {"type": "document", "document": doc}}
+        )
+
+    async def send_location(
+        self,
+        recipient: str,
+        lat: float,
+        lng: float,
+        address: str,
+        name: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        إرسال موقع جغرافي - Send location - مقام بھیجیں
+        """
+        params: dict[str, Any] = {
+            "phone": recipient,
+            "lat": lat,
+            "lng": lng,
+            "address": address,
+        }
+        if name:
+            params["name"] = name
+        return await self._send_custom_path_request("message/location", params)
+
+    async def send_contact(
+        self, recipient: str, contacts: list[dict[str, Any]]
+    ) -> dict[str, Any]:
+        """
+        إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+        contacts: [{"name":{"formatted_name":"...","first_name":"...","last_name":"..."},"phones":[{"phone":"+966...","type":"CELL"}]}]
+        """
+        return await self._send_custom_path_request(
+            "message/contact", {"phone": recipient, "contacts": contacts}
         )

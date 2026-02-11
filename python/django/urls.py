@@ -9,9 +9,11 @@ from django.urls import path
 from views import (
     send_audio,
     send_buttons,
+    send_contact,
     send_document,
     send_image,
     send_list,
+    send_location,
     send_text,
     send_video,
 )
@@ -24,4 +26,6 @@ urlpatterns = [
     path("video", send_video),
     path("audio", send_audio),
     path("document", send_document),
+    path("location", send_location),
+    path("contact", send_contact),
 ]

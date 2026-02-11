@@ -155,6 +155,49 @@ def send_document():
     return jsonify(result)
 
 
+# مسار إرسال موقع جغرافي - Location route - مقام روٹ
+@app.route("/whatsapp/location", methods=["POST"])
+def send_location():
+    """
+    إرسال موقع جغرافي - Send location - مقام بھیجیں
+    Body: {"to":"9665XXXXXXXX","lat":24.7136,"lng":46.6753,"address":"Riyadh","name":"My Office"}
+    """
+    data = request.get_json(silent=True) or {}
+    to = data.get("to")
+    lat = data.get("lat")
+    lng = data.get("lng")
+    address = data.get("address", "")
+    name = data.get("name")
+    if not to or lat is None or lng is None or not address:
+        return jsonify(
+            {"error": True, "message": "Missing 'to', 'lat', 'lng', or 'address' field"}
+        ), 400
+    result = service.send_location(to, float(lat), float(lng), address, name)
+    if result.get("error"):
+        return jsonify(result), result.get("status_code", 500)
+    return jsonify(result)
+
+
+# مسار إرسال جهة اتصال - Contact route - رابطہ روٹ
+@app.route("/whatsapp/contact", methods=["POST"])
+def send_contact():
+    """
+    إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+    Body: {"to":"9665XXXXXXXX","contacts":[{"name":{"formatted_name":"...","first_name":"...","last_name":"..."},"phones":[{"phone":"+966...","type":"CELL"}]}]}
+    """
+    data = request.get_json(silent=True) or {}
+    to = data.get("to")
+    contacts = data.get("contacts", [])
+    if not to or not contacts:
+        return jsonify(
+            {"error": True, "message": "Missing 'to' or 'contacts' field"}
+        ), 400
+    result = service.send_contact(to, contacts)
+    if result.get("error"):
+        return jsonify(result), result.get("status_code", 500)
+    return jsonify(result)
+
+
 if __name__ == "__main__":
     # تشغيل الخادم - Run server - سرور چلائیں
     app.run(host="0.0.0.0", port=5000, debug=True)

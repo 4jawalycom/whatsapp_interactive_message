@@ -31,6 +31,34 @@ public class WhatsAppService
     }
 
     /// <summary>
+    /// Sends custom path API request - طلب API مع مسار مخصص - کسٹم پاتھ API درخواست
+    /// Used for location/contact - different structure (path + direct params)
+    /// path: message/location or message/contact - المسار - API پاتھ
+    /// </summary>
+    private async Task<string> MakeCustomPathRequestAsync(string path, JsonObject params)
+    {
+        try
+        {
+            var body = new JsonObject
+            {
+                ["path"] = path,
+                ["params"] = params
+            };
+
+            var json = JsonSerializer.Serialize(body, new JsonSerializerOptions { WriteIndented = false });
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(_baseUrl, content);
+
+            return await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"API Request failed / فشل الطلب: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
     /// Sends the API request / إرسال طلب API / API درخواست بھیجیں
     /// </summary>
     private async Task<string> MakeRequestAsync(JsonObject data)
@@ -245,5 +273,48 @@ public class WhatsAppService
             ["document"] = document
         };
         return await MakeRequestAsync(data);
+    }
+
+    /// <summary>
+    /// Sends a location / إرسال موقع جغرافي / مقام بھیجیں
+    /// </summary>
+    /// <param name="recipient">Phone number - رقم الهاتف - فون نمبر</param>
+    /// <param name="lat">Latitude - خط العرض - عرض البلد</param>
+    /// <param name="lng">Longitude - خط الطول - طول البلد</param>
+    /// <param name="address">Optional address - العنوان - پتہ (اختیاری)</param>
+    /// <param name="name">Optional name - الاسم - نام (اختیاری)</param>
+    public async Task<string> SendLocationAsync(
+        string recipient,
+        double lat,
+        double lng,
+        string? address = null,
+        string? name = null)
+    {
+        var params = new JsonObject
+        {
+            ["phone"] = recipient,
+            ["lat"] = lat,
+            ["lng"] = lng
+        };
+        if (!string.IsNullOrEmpty(address))
+            params["address"] = address;
+        if (!string.IsNullOrEmpty(name))
+            params["name"] = name;
+        return await MakeCustomPathRequestAsync("message/location", params);
+    }
+
+    /// <summary>
+    /// Sends a contact / إرسال جهة اتصال / رابطہ بھیجیں
+    /// </summary>
+    /// <param name="recipient">Phone number - رقم الهاتف - فون نمبر</param>
+    /// <param name="contacts">List of contact objects - قائمة جهات الاتصال - رابطوں کی فہرست</param>
+    public async Task<string> SendContactAsync(string recipient, JsonArray contacts)
+    {
+        var params = new JsonObject
+        {
+            ["phone"] = recipient,
+            ["contacts"] = contacts
+        };
+        return await MakeCustomPathRequestAsync("message/contact", params);
     }
 }

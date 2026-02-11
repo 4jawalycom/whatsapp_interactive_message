@@ -195,4 +195,59 @@ class WhatsAppController extends Controller
 
         return response()->json($response);
     }
+
+    /**
+     * إرسال موقع جغرافي - Send location - مقام بھیجیں
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function sendLocation(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'to' => 'required|string',
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+            'address' => 'required|string',
+            'name' => 'nullable|string',
+        ]);
+
+        $response = $this->whatsAppService->sendLocation(
+            $validated['to'],
+            (float) $validated['lat'],
+            (float) $validated['lng'],
+            $validated['address'],
+            $validated['name'] ?? null
+        );
+
+        return response()->json($response);
+    }
+
+    /**
+     * إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function sendContact(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'to' => 'required|string',
+            'contacts' => 'required|array',
+            'contacts.*.name' => 'required|array',
+            'contacts.*.name.formatted_name' => 'required|string',
+            'contacts.*.name.first_name' => 'required|string',
+            'contacts.*.name.last_name' => 'required|string',
+            'contacts.*.phones' => 'required|array',
+            'contacts.*.phones.*.phone' => 'required|string',
+            'contacts.*.phones.*.type' => 'nullable|string',
+        ]);
+
+        $response = $this->whatsAppService->sendContact(
+            $validated['to'],
+            $validated['contacts']
+        );
+
+        return response()->json($response);
+    }
 }

@@ -15,6 +15,8 @@
 5. فيديو (Video)
 6. ملف صوتي (Audio)
 7. مستند (Document)
+8. موقع جغرافي (Location)
+9. جهة اتصال (Contact)
 
 ---
 
@@ -501,6 +503,142 @@ if __name__ == "__main__":
     send_document_message()
 ```
 
+### إرسال موقع جغرافي | send_location.py
+```python
+#!/usr/bin/env python3
+# إرسال موقع جغرافي عبر واتساب
+# Send location via WhatsApp
+# واٹس ایپ کے ذریعے مقام بھیجیں
+
+import base64
+import json
+import requests
+
+# إعدادات الاتصال - Connection settings - رابطہ کی ترتیبات
+APP_KEY = "your_app_key"
+API_SECRET = "your_api_secret"
+PROJECT_ID = "your_project_id"
+RECIPIENT = "966500000000"
+
+# بيانات الموقع - Location data - مقام کا ڈیٹا
+LAT = 24.7136
+LNG = 46.6753
+ADDRESS = "Riyadh, Saudi Arabia"
+NAME = "My Office"
+
+
+def send_location_message():
+    """إرسال موقع - Send location - مقام بھیجیں"""
+    url = f"https://api-users.4jawaly.com/api/v1/whatsapp/{PROJECT_ID}"
+    auth_string = f"{APP_KEY}:{API_SECRET}"
+    auth_bytes = auth_string.encode("utf-8")
+    auth_b64 = base64.b64encode(auth_bytes).decode("utf-8")
+
+    # ملاحظة: الموقع يستخدم هيكل طلب مختلف عن الأنواع الأخرى
+    # Note: Location uses a different request structure than other types
+    payload = {
+        "path": "message/location",
+        "params": {
+            "phone": RECIPIENT,
+            "lat": LAT,
+            "lng": LNG,
+            "address": ADDRESS,
+            "name": NAME,
+        },
+    }
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {auth_b64}",
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        print(f"رمز الاستجابة / Response code / جوابی کوڈ: {response.status_code}")
+        print(f"\nالاستجابة / Response / جواب:\n{json.dumps(response.json(), indent=2, ensure_ascii=False)}")
+    except requests.exceptions.RequestException as e:
+        print(f"خطأ في الاتصال / Connection error / رابطہ میں خرابی: {e}")
+    except json.JSONDecodeError as e:
+        print(f"خطأ في تحليل الاستجابة / Response parse error / جواب کی تشریح میں خرابی: {e}")
+        print(f"النص الخام / Raw text / خام متن: {response.text}")
+
+
+if __name__ == "__main__":
+    send_location_message()
+```
+
+### إرسال جهة اتصال | send_contact.py
+```python
+#!/usr/bin/env python3
+# إرسال جهة اتصال عبر واتساب
+# Send contact via WhatsApp
+# واٹس ایپ کے ذریعے رابطہ بھیجیں
+
+import base64
+import json
+import requests
+
+# إعدادات الاتصال - Connection settings - رابطہ کی ترتیبات
+APP_KEY = "your_app_key"
+API_SECRET = "your_api_secret"
+PROJECT_ID = "your_project_id"
+RECIPIENT = "966500000000"
+
+# بيانات جهة الاتصال - Contact data - رابطہ کا ڈیٹا
+CONTACTS = [
+    {
+        "name": {
+            "formatted_name": "Ahmed Ali",
+            "first_name": "Ahmed",
+            "last_name": "Ali",
+        },
+        "phones": [
+            {
+                "phone": "+966501234567",
+                "type": "CELL",
+            }
+        ],
+    }
+]
+
+
+def send_contact_message():
+    """إرسال جهة اتصال - Send contact - رابطہ بھیجیں"""
+    url = f"https://api-users.4jawaly.com/api/v1/whatsapp/{PROJECT_ID}"
+    auth_string = f"{APP_KEY}:{API_SECRET}"
+    auth_bytes = auth_string.encode("utf-8")
+    auth_b64 = base64.b64encode(auth_bytes).decode("utf-8")
+
+    # ملاحظة: جهة الاتصال تستخدم هيكل طلب مختلف عن الأنواع الأخرى
+    # Note: Contact uses a different request structure than other types
+    payload = {
+        "path": "message/contact",
+        "params": {
+            "phone": RECIPIENT,
+            "contacts": CONTACTS,
+        },
+    }
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {auth_b64}",
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        print(f"رمز الاستجابة / Response code / جوابی کوڈ: {response.status_code}")
+        print(f"\nالاستجابة / Response / جواب:\n{json.dumps(response.json(), indent=2, ensure_ascii=False)}")
+    except requests.exceptions.RequestException as e:
+        print(f"خطأ في الاتصال / Connection error / رابطہ میں خرابی: {e}")
+    except json.JSONDecodeError as e:
+        print(f"خطأ في تحليل الاستجابة / Response parse error / جواب کی تشریح میں خرابی: {e}")
+        print(f"النص الخام / Raw text / خام متن: {response.text}")
+
+
+if __name__ == "__main__":
+    send_contact_message()
+```
+
 ---
 
 ## 2. Python Flask Framework
@@ -568,6 +706,23 @@ class WhatsAppService:
                 },
             },
         }
+        try:
+            response = requests.post(
+                self.base_url, json=payload, headers=self.headers, timeout=30
+            )
+            return {"status_code": response.status_code, "data": response.json()}
+        except requests.exceptions.RequestException as e:
+            return {"error": True, "message": str(e), "status_code": 500}
+        except ValueError:
+            return {"error": True, "message": "Invalid JSON response", "status_code": 500}
+
+    def _send_custom_path_request(self, path: str, params: dict) -> dict:
+        """
+        إرسال طلب مسار مخصص - Send custom path request - مخصوص path درخواست بھیجیں
+        يستخدمه الموقع وجهة الاتصال (هيكل مختلف عن global)
+        Used by location and contact (different structure than global)
+        """
+        payload = {"path": path, "params": params}
         try:
             response = requests.post(
                 self.base_url, json=payload, headers=self.headers, timeout=30
@@ -693,6 +848,36 @@ class WhatsAppService:
             doc["filename"] = filename
         return self._send_request(
             {"to": recipient, "payload": {"type": "document", "document": doc}}
+        )
+
+    def send_location(
+        self,
+        recipient: str,
+        lat: float,
+        lng: float,
+        address: str,
+        name: Optional[str] = None,
+    ) -> dict:
+        """
+        إرسال موقع جغرافي - Send location - مقام بھیجیں
+        """
+        params = {
+            "phone": recipient,
+            "lat": lat,
+            "lng": lng,
+            "address": address,
+        }
+        if name:
+            params["name"] = name
+        return self._send_custom_path_request("message/location", params)
+
+    def send_contact(self, recipient: str, contacts: list[dict]) -> dict:
+        """
+        إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+        contacts: [{"name":{"formatted_name":"...","first_name":"...","last_name":"..."},"phones":[{"phone":"+966...","type":"CELL"}]}]
+        """
+        return self._send_custom_path_request(
+            "message/contact", {"phone": recipient, "contacts": contacts}
         )
 ```
 
@@ -855,6 +1040,49 @@ def send_document():
     return jsonify(result)
 
 
+# مسار إرسال موقع جغرافي - Location route - مقام روٹ
+@app.route("/whatsapp/location", methods=["POST"])
+def send_location():
+    """
+    إرسال موقع جغرافي - Send location - مقام بھیجیں
+    Body: {"to":"9665XXXXXXXX","lat":24.7136,"lng":46.6753,"address":"Riyadh","name":"My Office"}
+    """
+    data = request.get_json(silent=True) or {}
+    to = data.get("to")
+    lat = data.get("lat")
+    lng = data.get("lng")
+    address = data.get("address", "")
+    name = data.get("name")
+    if not to or lat is None or lng is None or not address:
+        return jsonify(
+            {"error": True, "message": "Missing 'to', 'lat', 'lng', or 'address' field"}
+        ), 400
+    result = service.send_location(to, float(lat), float(lng), address, name)
+    if result.get("error"):
+        return jsonify(result), result.get("status_code", 500)
+    return jsonify(result)
+
+
+# مسار إرسال جهة اتصال - Contact route - رابطہ روٹ
+@app.route("/whatsapp/contact", methods=["POST"])
+def send_contact():
+    """
+    إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+    Body: {"to":"9665XXXXXXXX","contacts":[{"name":{"formatted_name":"...","first_name":"...","last_name":"..."},"phones":[{"phone":"+966...","type":"CELL"}]}]}
+    """
+    data = request.get_json(silent=True) or {}
+    to = data.get("to")
+    contacts = data.get("contacts", [])
+    if not to or not contacts:
+        return jsonify(
+            {"error": True, "message": "Missing 'to' or 'contacts' field"}
+        ), 400
+    result = service.send_contact(to, contacts)
+    if result.get("error"):
+        return jsonify(result), result.get("status_code", 500)
+    return jsonify(result)
+
+
 if __name__ == "__main__":
     # تشغيل الخادم - Run server - سرور چلائیں
     app.run(host="0.0.0.0", port=5000, debug=True)
@@ -927,6 +1155,23 @@ class WhatsAppService:
                 },
             },
         }
+        try:
+            response = requests.post(
+                self.base_url, json=payload, headers=self.headers, timeout=30
+            )
+            return {"status_code": response.status_code, "data": response.json()}
+        except requests.exceptions.RequestException as e:
+            return {"error": True, "message": str(e), "status_code": 500}
+        except ValueError:
+            return {"error": True, "message": "Invalid JSON response", "status_code": 500}
+
+    def _send_custom_path_request(self, path: str, params: dict) -> dict:
+        """
+        إرسال طلب مسار مخصص - Send custom path request - مخصوص path درخواست بھیجیں
+        يستخدمه الموقع وجهة الاتصال (هيكل مختلف عن global)
+        Used by location and contact (different structure than global)
+        """
+        payload = {"path": path, "params": params}
         try:
             response = requests.post(
                 self.base_url, json=payload, headers=self.headers, timeout=30
@@ -1052,6 +1297,36 @@ class WhatsAppService:
             doc["filename"] = filename
         return self._send_request(
             {"to": recipient, "payload": {"type": "document", "document": doc}}
+        )
+
+    def send_location(
+        self,
+        recipient: str,
+        lat: float,
+        lng: float,
+        address: str,
+        name: Optional[str] = None,
+    ) -> dict:
+        """
+        إرسال موقع جغرافي - Send location - مقام بھیجیں
+        """
+        params = {
+            "phone": recipient,
+            "lat": lat,
+            "lng": lng,
+            "address": address,
+        }
+        if name:
+            params["name"] = name
+        return self._send_custom_path_request("message/location", params)
+
+    def send_contact(self, recipient: str, contacts: list) -> dict:
+        """
+        إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+        contacts: [{"name":{"formatted_name":"...","first_name":"...","last_name":"..."},"phones":[{"phone":"+966...","type":"CELL"}]}]
+        """
+        return self._send_custom_path_request(
+            "message/contact", {"phone": recipient, "contacts": contacts}
         )
 ```
 
@@ -1220,6 +1495,51 @@ def send_document(request):
     if result.get("error"):
         return JsonResponse(result, status=result.get("status_code", 500))
     return JsonResponse(result)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def send_location(request):
+    """
+    إرسال موقع جغرافي - Send location - مقام بھیجیں
+    Body: {"to":"9665XXXXXXXX","lat":24.7136,"lng":46.6753,"address":"Riyadh","name":"My Office"}
+    """
+    data = _parse_json(request)
+    to = data.get("to")
+    lat = data.get("lat")
+    lng = data.get("lng")
+    address = data.get("address", "")
+    name = data.get("name")
+    if not to or lat is None or lng is None or not address:
+        return JsonResponse(
+            {"error": True, "message": "Missing 'to', 'lat', 'lng', or 'address' field"},
+            status=400,
+        )
+    result = service.send_location(to, float(lat), float(lng), address, name)
+    if result.get("error"):
+        return JsonResponse(result, status=result.get("status_code", 500))
+    return JsonResponse(result)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def send_contact(request):
+    """
+    إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+    Body: {"to":"9665XXXXXXXX","contacts":[{"name":{"formatted_name":"...","first_name":"...","last_name":"..."},"phones":[{"phone":"+966...","type":"CELL"}]}]}
+    """
+    data = _parse_json(request)
+    to = data.get("to")
+    contacts = data.get("contacts", [])
+    if not to or not contacts:
+        return JsonResponse(
+            {"error": True, "message": "Missing 'to' or 'contacts' field"},
+            status=400,
+        )
+    result = service.send_contact(to, contacts)
+    if result.get("error"):
+        return JsonResponse(result, status=result.get("status_code", 500))
+    return JsonResponse(result)
 ```
 
 ### المسارات | urls.py
@@ -1235,9 +1555,11 @@ from django.urls import path
 from views import (
     send_audio,
     send_buttons,
+    send_contact,
     send_document,
     send_image,
     send_list,
+    send_location,
     send_text,
     send_video,
 )
@@ -1250,6 +1572,8 @@ urlpatterns = [
     path("video", send_video),
     path("audio", send_audio),
     path("document", send_document),
+    path("location", send_location),
+    path("contact", send_contact),
 ]
 ```
 
@@ -1316,6 +1640,26 @@ class WhatsAppService:
                 },
             },
         }
+        try:
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    self.base_url, json=payload, headers=self.headers
+                )
+                return {"status_code": response.status_code, "data": response.json()}
+        except httpx.RequestError as e:
+            return {"error": True, "message": str(e), "status_code": 500}
+        except ValueError:
+            return {"error": True, "message": "Invalid JSON response", "status_code": 500}
+
+    async def _send_custom_path_request(
+        self, path: str, params: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        إرسال طلب مسار مخصص - Send custom path request - مخصوص path درخواست بھیجیں
+        يستخدمه الموقع وجهة الاتصال (هيكل مختلف عن global)
+        Used by location and contact (different structure than global)
+        """
+        payload = {"path": path, "params": params}
         try:
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
@@ -1442,6 +1786,38 @@ class WhatsAppService:
             doc["filename"] = filename
         return await self._send_request(
             {"to": recipient, "payload": {"type": "document", "document": doc}}
+        )
+
+    async def send_location(
+        self,
+        recipient: str,
+        lat: float,
+        lng: float,
+        address: str,
+        name: Optional[str] = None,
+    ) -> dict[str, Any]:
+        """
+        إرسال موقع جغرافي - Send location - مقام بھیجیں
+        """
+        params: dict[str, Any] = {
+            "phone": recipient,
+            "lat": lat,
+            "lng": lng,
+            "address": address,
+        }
+        if name:
+            params["name"] = name
+        return await self._send_custom_path_request("message/location", params)
+
+    async def send_contact(
+        self, recipient: str, contacts: list[dict[str, Any]]
+    ) -> dict[str, Any]:
+        """
+        إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+        contacts: [{"name":{"formatted_name":"...","first_name":"...","last_name":"..."},"phones":[{"phone":"+966...","type":"CELL"}]}]
+        """
+        return await self._send_custom_path_request(
+            "message/contact", {"phone": recipient, "contacts": contacts}
         )
 ```
 
@@ -1579,6 +1955,47 @@ class DocumentRequest(BaseModel):
     filename: Optional[str] = Field(None, description="اسم الملف - Filename - فائل کا نام")
 
 
+class LocationRequest(BaseModel):
+    """طلب إرسال موقع جغرافي - Location request - مقام کی درخواست"""
+
+    to: str = Field(..., description="رقم المستلم - Recipient number - وصول کنندہ نمبر")
+    lat: float = Field(..., description="خط العرض - Latitude - عرض البلد")
+    lng: float = Field(..., description="خط الطول - Longitude - طول البلد")
+    address: str = Field(..., description="العنوان - Address - پتہ")
+    name: Optional[str] = Field(None, description="اسم الموقع - Location name - مقام کا نام")
+
+
+class ContactPhone(BaseModel):
+    """رقم هاتف في جهة الاتصال - Phone in contact - رابطہ میں فون نمبر"""
+
+    phone: str = Field(..., description="رقم الهاتف - Phone number - فون نمبر")
+    type: Optional[str] = Field("CELL", description="نوع الهاتف - Phone type - فون کی قسم")
+
+
+class ContactName(BaseModel):
+    """اسم جهة الاتصال - Contact name - رابطہ کا نام"""
+
+    formatted_name: str = Field(..., description="الاسم الكامل - Full name - مکمل نام")
+    first_name: str = Field(..., description="الاسم الأول - First name - پہلا نام")
+    last_name: str = Field(..., description="اسم العائلة - Last name - آخری نام")
+
+
+class ContactItem(BaseModel):
+    """جهة اتصال واحدة - Single contact - ایک رابطہ"""
+
+    name: ContactName = Field(..., description="الاسم - Name - نام")
+    phones: list[ContactPhone] = Field(..., description="أرقام الهواتف - Phone numbers - فون نمبرز")
+
+
+class ContactRequest(BaseModel):
+    """طلب إرسال جهة اتصال - Contact request - رابطہ کی درخواست"""
+
+    to: str = Field(..., description="رقم المستلم - Recipient number - وصول کنندہ نمبر")
+    contacts: list[ContactItem] = Field(
+        ..., min_length=1, description="جهات الاتصال - Contacts - رابطے"
+    )
+
+
 # --- Routes ---
 # المسارات - API endpoints
 
@@ -1698,6 +2115,49 @@ async def send_document(req: DocumentRequest):
     إرسال مستند - Send document - دستاویز بھیجیں
     """
     result = await service.send_document(req.to, req.link, req.caption, req.filename)
+    if result.get("error"):
+        raise HTTPException(
+            status_code=result.get("status_code", status.HTTP_500_INTERNAL_SERVER_ERROR),
+            detail=result.get("message", "API request failed"),
+        )
+    return result
+
+
+@app.post("/whatsapp/location")
+async def send_location(req: LocationRequest):
+    """
+    إرسال موقع جغرافي - Send location - مقام بھیجیں
+    """
+    result = await service.send_location(
+        req.to, req.lat, req.lng, req.address, req.name
+    )
+    if result.get("error"):
+        raise HTTPException(
+            status_code=result.get("status_code", status.HTTP_500_INTERNAL_SERVER_ERROR),
+            detail=result.get("message", "API request failed"),
+        )
+    return result
+
+
+@app.post("/whatsapp/contact")
+async def send_contact(req: ContactRequest):
+    """
+    إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+    """
+    contacts = []
+    for c in req.contacts:
+        phones = [{"phone": p.phone, "type": p.type or "CELL"} for p in c.phones]
+        contacts.append(
+            {
+                "name": {
+                    "formatted_name": c.name.formatted_name,
+                    "first_name": c.name.first_name,
+                    "last_name": c.name.last_name,
+                },
+                "phones": phones,
+            }
+        )
+    result = await service.send_contact(req.to, contacts)
     if result.get("error"):
         raise HTTPException(
             status_code=result.get("status_code", status.HTTP_500_INTERNAL_SERVER_ERROR),

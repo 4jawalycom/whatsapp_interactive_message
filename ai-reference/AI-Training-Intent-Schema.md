@@ -488,6 +488,143 @@
 
 ---
 
+### Intent 8: `send_location` - مشاركة موقع جغرافي
+
+**أمثلة على أوامر المستخدم:**
+- "أرسل موقع على واتساب"
+- "ابغى أشارك موقع المكتب مع العميل"
+- "Send location via WhatsApp"
+- "أرسل موقع الفرع للرقم 966500000000"
+- "شارك الموقع الجغرافي مع العميل"
+
+**المعاملات المطلوبة (Parameters):**
+| المعامل | النوع | مطلوب | الوصف |
+|---------|-------|-------|-------|
+| phone | string | نعم | رقم المستلم بالصيغة الدولية |
+| lat | number | نعم | خط العرض (Latitude) |
+| lng | number | نعم | خط الطول (Longitude) |
+| address | string | لا | العنوان النصي |
+| name | string | لا | اسم الموقع |
+
+**ملاحظة مهمة**: هذا النوع يستخدم هيكل طلب **مختلف** عن الأنواع السبعة السابقة:
+- `path` = `"message/location"` (وليس `"global"`)
+- `params` مباشرة (بدون `url` / `method` / `data`)
+
+**Schema:**
+```json
+{
+  "path": "message/location",
+  "params": {
+    "phone": "966500000000",
+    "lat": 24.7136,
+    "lng": 46.6753,
+    "address": "Riyadh, Saudi Arabia",
+    "name": "My Office"
+  }
+}
+```
+
+**مثال طلب كامل (cURL):**
+```bash
+curl --location 'https://api-users.4jawaly.com/api/v1/whatsapp/{project_id}' \
+--header 'accept: application/json' \
+--header 'Authorization: Basic YOUR_CODE_HERE' \
+--header 'Content-Type: application/json' \
+--data '{
+    "path": "message/location",
+    "params": {
+        "phone": "966500000000",
+        "lat": 24.7136,
+        "lng": 46.6753,
+        "address": "Riyadh, Saudi Arabia",
+        "name": "المكتب الرئيسي"
+    }
+}'
+```
+
+---
+
+### Intent 9: `send_contact` - إرسال جهة اتصال
+
+**أمثلة على أوامر المستخدم:**
+- "أرسل جهة اتصال على واتساب"
+- "ابغى أشارك رقم الدعم الفني مع العميل"
+- "Send contact via WhatsApp"
+- "أرسل بيانات الاتصال للعميل"
+- "شارك كرت الاتصال مع الرقم 966500000000"
+
+**المعاملات المطلوبة (Parameters):**
+| المعامل | النوع | مطلوب | الوصف |
+|---------|-------|-------|-------|
+| phone | string | نعم | رقم المستلم |
+| contacts | array | نعم | مصفوفة جهات الاتصال |
+| contacts[].name.formatted_name | string | نعم | الاسم الكامل |
+| contacts[].name.first_name | string | نعم | الاسم الأول |
+| contacts[].name.last_name | string | لا | اسم العائلة |
+| contacts[].phones | array | نعم | أرقام الهاتف |
+| contacts[].phones[].phone | string | نعم | رقم الهاتف |
+| contacts[].phones[].type | string | لا | نوع الرقم (CELL, WORK, HOME) |
+
+**ملاحظة مهمة**: هذا النوع يستخدم هيكل طلب **مختلف** عن الأنواع السبعة السابقة:
+- `path` = `"message/contact"` (وليس `"global"`)
+- `params` مباشرة (بدون `url` / `method` / `data`)
+
+**Schema:**
+```json
+{
+  "path": "message/contact",
+  "params": {
+    "phone": "966500000000",
+    "contacts": [
+      {
+        "name": {
+          "formatted_name": "Ahmed Ali",
+          "first_name": "Ahmed",
+          "last_name": "Ali"
+        },
+        "phones": [
+          {
+            "phone": "+966501234567",
+            "type": "CELL"
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+**مثال طلب كامل (cURL):**
+```bash
+curl --location 'https://api-users.4jawaly.com/api/v1/whatsapp/{project_id}' \
+--header 'accept: application/json' \
+--header 'Authorization: Basic YOUR_CODE_HERE' \
+--header 'Content-Type: application/json' \
+--data '{
+    "path": "message/contact",
+    "params": {
+        "phone": "966500000000",
+        "contacts": [
+            {
+                "name": {
+                    "formatted_name": "الدعم الفني - 4Jawaly",
+                    "first_name": "الدعم الفني",
+                    "last_name": "4Jawaly"
+                },
+                "phones": [
+                    {
+                        "phone": "+966500000000",
+                        "type": "WORK"
+                    }
+                ]
+            }
+        ]
+    }
+}'
+```
+
+---
+
 ## رابعاً: أمثلة محادثات تدريبية | Training Conversation Examples
 
 ### محادثة 1: إرسال نص بسيط
@@ -527,7 +664,22 @@
       الملف: invoice.pdf
 ```
 
-### محادثة 6: سؤال عن الإعدادات
+### محادثة 6: إرسال موقع
+```
+المستخدم: أرسل موقع المكتب للعميل 966500003333
+البوت: ما هي إحداثيات الموقع؟
+المستخدم: خط العرض 24.7136 وخط الطول 46.6753 والعنوان "الرياض، المملكة العربية السعودية"
+البوت: تم إرسال الموقع الجغرافي عبر واتساب إلى 966500003333 بنجاح.
+      الموقع: الرياض، المملكة العربية السعودية (24.7136, 46.6753)
+```
+
+### محادثة 7: إرسال جهة اتصال
+```
+المستخدم: أرسل رقم الدعم الفني للعميل 966500004444
+البوت: تم إرسال جهة اتصال "الدعم الفني - 4Jawaly" عبر واتساب إلى 966500004444 بنجاح.
+```
+
+### محادثة 8: سؤال عن الإعدادات
 ```
 المستخدم: كيف أحصل على رقم مشروع واتساب؟
 البوت: للحصول على رقم المشروع (Project ID):
