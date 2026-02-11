@@ -15,6 +15,8 @@
 5. فيديو (Video)
 6. ملف صوتي (Audio)
 7. مستند (Document)
+8. موقع جغرافي (Location)
+9. جهة اتصال (Contact)
 
 ---
 
@@ -527,6 +529,154 @@ $payload = [
                 "filename" => $document_filename
             ]
         ]
+    ]
+];
+
+// إرسال الطلب عبر cURL - Send request via cURL - cURL کے ذریعے درخواست بھیجیں
+$ch = curl_init($base_url);
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode($payload),
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        "Content-Type: application/json",
+        "Authorization: Basic {$auth}"
+    ]
+]);
+
+$response = curl_exec($ch);
+$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$error = curl_error($ch);
+curl_close($ch);
+
+// معالجة النتيجة - Handle result - نتیجہ سنبھالیں
+if ($error) {
+    echo "خطأ في الاتصال: {$error}\n";
+    echo "Connection error: {$error}\n";
+    echo "رابطہ میں خرابی: {$error}\n";
+    exit(1);
+}
+
+echo "رمز الاستجابة: {$http_code}\n";
+echo "Response code: {$http_code}\n";
+echo "جوابی کوڈ: {$http_code}\n";
+echo "\nالاستجابة الكاملة:\nFull response:\nمکمل جواب:\n";
+echo $response . "\n";
+```
+
+### إرسال موقع جغرافي | send_location.php
+```php
+<?php
+/**
+ * إرسال موقع جغرافي عبر واتساب
+ * Send location via WhatsApp
+ * واٹس ایپ کے ذریعے مقام بھیجیں
+ */
+
+// إعدادات الاتصال - Connection settings - رابطہ کی ترتیبات
+$app_key = "your_app_key";
+$api_secret = "your_api_secret";
+$project_id = "your_project_id";
+$recipient = "966500000000";
+
+// بيانات الموقع - Location data - مقام کا ڈیٹا
+$lat = 24.7136;
+$lng = 46.6753;
+$address = "Riyadh, Saudi Arabia";
+$name = "My Office";
+
+// بناء الطلب - Build request - درخواست بنائیں
+// ملاحظة: الموقع يستخدم هيكل طلب مختلف عن الأنواع الأخرى
+// Note: Location uses a different request structure than other types
+$base_url = "https://api-users.4jawaly.com/api/v1/whatsapp/{$project_id}";
+$auth = base64_encode("{$app_key}:{$api_secret}");
+
+$payload = [
+    "path" => "message/location",
+    "params" => [
+        "phone" => $recipient,
+        "lat" => $lat,
+        "lng" => $lng,
+        "address" => $address,
+        "name" => $name
+    ]
+];
+
+// إرسال الطلب عبر cURL - Send request via cURL - cURL کے ذریعے درخواست بھیجیں
+$ch = curl_init($base_url);
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => json_encode($payload),
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        "Content-Type: application/json",
+        "Authorization: Basic {$auth}"
+    ]
+]);
+
+$response = curl_exec($ch);
+$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$error = curl_error($ch);
+curl_close($ch);
+
+// معالجة النتيجة - Handle result - نتیجہ سنبھالیں
+if ($error) {
+    echo "خطأ في الاتصال: {$error}\n";
+    echo "Connection error: {$error}\n";
+    echo "رابطہ میں خرابی: {$error}\n";
+    exit(1);
+}
+
+echo "رمز الاستجابة: {$http_code}\n";
+echo "Response code: {$http_code}\n";
+echo "جوابی کوڈ: {$http_code}\n";
+echo "\nالاستجابة الكاملة:\nFull response:\nمکمل جواب:\n";
+echo $response . "\n";
+```
+
+### إرسال جهة اتصال | send_contact.php
+```php
+<?php
+/**
+ * إرسال جهة اتصال عبر واتساب
+ * Send contact via WhatsApp
+ * واٹس ایپ کے ذریعے رابطہ بھیجیں
+ */
+
+// إعدادات الاتصال - Connection settings - رابطہ کی ترتیبات
+$app_key = "your_app_key";
+$api_secret = "your_api_secret";
+$project_id = "your_project_id";
+$recipient = "966500000000";
+
+// بيانات جهة الاتصال - Contact data - رابطہ کا ڈیٹا
+$contacts = [
+    [
+        "name" => [
+            "formatted_name" => "Ahmed Ali",
+            "first_name" => "Ahmed",
+            "last_name" => "Ali"
+        ],
+        "phones" => [
+            [
+                "phone" => "+966501234567",
+                "type" => "CELL"
+            ]
+        ]
+    ]
+];
+
+// بناء الطلب - Build request - درخواست بنائیں
+// ملاحظة: جهة الاتصال تستخدم هيكل طلب مختلف عن الأنواع الأخرى
+// Note: Contact uses a different request structure than other types
+$base_url = "https://api-users.4jawaly.com/api/v1/whatsapp/{$project_id}";
+$auth = base64_encode("{$app_key}:{$api_secret}");
+
+$payload = [
+    "path" => "message/contact",
+    "params" => [
+        "phone" => $recipient,
+        "contacts" => $contacts
     ]
 ];
 
@@ -1094,6 +1244,132 @@ echo "\nالاستجابة الكاملة:\nFull response:\nمکمل جواب:\n
 echo $response . "\n";
 ```
 
+### إرسال موقع جغرافي | send_location.php
+```php
+<?php
+/**
+ * إرسال موقع جغرافي عبر واتساب
+ * Send location via WhatsApp
+ * واٹس ایپ کے ذریعے مقام بھیجیں
+ */
+
+// إعدادات الاتصال - Connection settings - رابطہ کی ترتیبات
+$app_key = "your_app_key";
+$api_secret = "your_api_secret";
+$project_id = "your_project_id";
+$recipient = "966500000000";
+
+// بيانات الموقع - Location data - مقام کا ڈیٹا
+$lat = 24.7136;
+$lng = 46.6753;
+$address = "Riyadh, Saudi Arabia";
+$name = "My Office";
+
+// بناء الطلب - Build request - درخواست بنائیں
+$base_url = "https://api-users.4jawaly.com/api/v1/whatsapp/" . $project_id;
+$auth = base64_encode($app_key . ":" . $api_secret);
+
+$payload = array(
+    "path" => "message/location",
+    "params" => array(
+        "phone" => $recipient,
+        "lat" => $lat,
+        "lng" => $lng,
+        "address" => $address,
+        "name" => $name
+    )
+);
+
+// إرسال الطلب عبر cURL - Send request via cURL
+$ch = curl_init($base_url);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    "Content-Type: application/json",
+    "Authorization: Basic " . $auth
+));
+
+$response = curl_exec($ch);
+$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$error = curl_error($ch);
+curl_close($ch);
+
+if ($error) {
+    echo "خطأ في الاتصال: " . $error . "\n";
+    exit(1);
+}
+echo "رمز الاستجابة: " . $http_code . "\n";
+echo $response . "\n";
+```
+
+### إرسال جهة اتصال | send_contact.php
+```php
+<?php
+/**
+ * إرسال جهة اتصال عبر واتساب
+ * Send contact via WhatsApp
+ * واٹس ایپ کے ذریعے رابطہ بھیجیں
+ */
+
+// إعدادات الاتصال - Connection settings - رابطہ کی ترتیبات
+$app_key = "your_app_key";
+$api_secret = "your_api_secret";
+$project_id = "your_project_id";
+$recipient = "966500000000";
+
+// بيانات جهة الاتصال - Contact data - رابطہ کا ڈیٹا
+$contacts = array(
+    array(
+        "name" => array(
+            "formatted_name" => "Ahmed Ali",
+            "first_name" => "Ahmed",
+            "last_name" => "Ali"
+        ),
+        "phones" => array(
+            array(
+                "phone" => "+966501234567",
+                "type" => "CELL"
+            )
+        )
+    )
+);
+
+// بناء الطلب - Build request - درخواست بنائیں
+$base_url = "https://api-users.4jawaly.com/api/v1/whatsapp/" . $project_id;
+$auth = base64_encode($app_key . ":" . $api_secret);
+
+$payload = array(
+    "path" => "message/contact",
+    "params" => array(
+        "phone" => $recipient,
+        "contacts" => $contacts
+    )
+);
+
+// إرسال الطلب عبر cURL - Send request via cURL
+$ch = curl_init($base_url);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+    "Content-Type: application/json",
+    "Authorization: Basic " . $auth
+));
+
+$response = curl_exec($ch);
+$http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+$error = curl_error($ch);
+curl_close($ch);
+
+if ($error) {
+    echo "خطأ في الاتصال: " . $error . "\n";
+    exit(1);
+}
+echo "رمز الاستجابة: " . $http_code . "\n";
+echo $response . "\n";
+```
+
 ---
 
 ## 3. PHP Lumen Framework
@@ -1367,6 +1643,69 @@ class WhatsAppService
             ],
         ]);
     }
+
+    /**
+     * إرسال طلب مسار مخصص - Send custom path request - مخصوص path درخواست بھیجیں
+     * يستخدمه الموقع وجهة الاتصال (هيكل مختلف عن global)
+     *
+     * @param string $path مسار الـ API - API path - API path
+     * @param array $params المعاملات - Parameters - پیرامیٹرز
+     * @return array
+     */
+    private function sendCustomPathRequest(string $path, array $params): array
+    {
+        $payload = [
+            'path' => $path,
+            'params' => $params,
+        ];
+
+        try {
+            $response = $this->client->post('', [
+                'json' => $payload,
+            ]);
+            $body = (string) $response->getBody();
+            return json_decode($body, true) ?? ['raw' => $body];
+        } catch (GuzzleException $e) {
+            return [
+                'error' => true,
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+            ];
+        }
+    }
+
+    /**
+     * إرسال موقع جغرافي - Send location - مقام بھیجیں
+     */
+    public function sendLocation(
+        string $recipient,
+        float $lat,
+        float $lng,
+        string $address,
+        ?string $name = null
+    ): array {
+        $params = [
+            'phone' => $recipient,
+            'lat' => $lat,
+            'lng' => $lng,
+            'address' => $address,
+        ];
+        if ($name !== null) {
+            $params['name'] = $name;
+        }
+        return $this->sendCustomPathRequest('message/location', $params);
+    }
+
+    /**
+     * إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+     */
+    public function sendContact(string $recipient, array $contacts): array
+    {
+        return $this->sendCustomPathRequest('message/contact', [
+            'phone' => $recipient,
+            'contacts' => $contacts,
+        ]);
+    }
 }
 ```
 
@@ -1569,6 +1908,55 @@ class WhatsAppController extends Controller
 
         return response()->json($response);
     }
+
+    /**
+     * إرسال موقع جغرافي - Send location - مقام بھیجیں
+     */
+    public function sendLocation(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'to' => 'required|string',
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+            'address' => 'required|string',
+            'name' => 'nullable|string',
+        ]);
+
+        $response = $this->whatsAppService->sendLocation(
+            $validated['to'],
+            (float) $validated['lat'],
+            (float) $validated['lng'],
+            $validated['address'],
+            $validated['name'] ?? null
+        );
+
+        return response()->json($response);
+    }
+
+    /**
+     * إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+     */
+    public function sendContact(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'to' => 'required|string',
+            'contacts' => 'required|array',
+            'contacts.*.name' => 'required|array',
+            'contacts.*.name.formatted_name' => 'required|string',
+            'contacts.*.name.first_name' => 'required|string',
+            'contacts.*.name.last_name' => 'required|string',
+            'contacts.*.phones' => 'required|array',
+            'contacts.*.phones.*.phone' => 'required|string',
+            'contacts.*.phones.*.type' => 'nullable|string',
+        ]);
+
+        $response = $this->whatsAppService->sendContact(
+            $validated['to'],
+            $validated['contacts']
+        );
+
+        return response()->json($response);
+    }
 }
 ```
 
@@ -1647,5 +2035,23 @@ $router->post('/whatsapp/audio', [
 */
 $router->post('/whatsapp/document', [
     'uses' => [WhatsAppController::class, 'sendDocument'],
+]);
+
+/*
+|--------------------------------------------------------------------------
+| POST /whatsapp/location - إرسال موقع جغرافي - Send location - مقام بھیجیں
+|--------------------------------------------------------------------------
+*/
+$router->post('/whatsapp/location', [
+    'uses' => [WhatsAppController::class, 'sendLocation'],
+]);
+
+/*
+|--------------------------------------------------------------------------
+| POST /whatsapp/contact - إرسال جهة اتصال - Send contact - رابطہ بھیجیں
+|--------------------------------------------------------------------------
+*/
+$router->post('/whatsapp/contact', [
+    'uses' => [WhatsAppController::class, 'sendContact'],
 ]);
 ```

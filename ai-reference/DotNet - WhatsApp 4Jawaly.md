@@ -15,6 +15,8 @@
 5. فيديو (Video)
 6. ملف صوتي (Audio)
 7. مستند (Document)
+8. موقع جغرافي (Location)
+9. جهة اتصال (Contact)
 
 ---
 
@@ -66,6 +68,33 @@ public class WhatsAppService
         _httpClient = new HttpClient();
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", _authHeader);
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+    }
+
+    /// <summary>
+    /// Sends custom path API request - طلب API مع مسار مخصص - کسٹم پاتھ API درخواست
+    /// Used for location/contact - different structure (path + direct params)
+    /// </summary>
+    private async Task<string> MakeCustomPathRequestAsync(string path, JsonObject params)
+    {
+        try
+        {
+            var body = new JsonObject
+            {
+                ["path"] = path,
+                ["params"] = params
+            };
+
+            var json = JsonSerializer.Serialize(body, new JsonSerializerOptions { WriteIndented = false });
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync(_baseUrl, content);
+
+            return await response.Content.ReadAsStringAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"API Request failed / فشل الطلب: {ex.Message}", ex);
+        }
     }
 
     /// <summary>
@@ -284,6 +313,42 @@ public class WhatsAppService
         };
         return await MakeRequestAsync(data);
     }
+
+    /// <summary>
+    /// Sends a location / إرسال موقع جغرافي / مقام بھیجیں
+    /// </summary>
+    public async Task<string> SendLocationAsync(
+        string recipient,
+        double lat,
+        double lng,
+        string? address = null,
+        string? name = null)
+    {
+        var params = new JsonObject
+        {
+            ["phone"] = recipient,
+            ["lat"] = lat,
+            ["lng"] = lng
+        };
+        if (!string.IsNullOrEmpty(address))
+            params["address"] = address;
+        if (!string.IsNullOrEmpty(name))
+            params["name"] = name;
+        return await MakeCustomPathRequestAsync("message/location", params);
+    }
+
+    /// <summary>
+    /// Sends a contact / إرسال جهة اتصال / رابطہ بھیجیں
+    /// </summary>
+    public async Task<string> SendContactAsync(string recipient, JsonArray contacts)
+    {
+        var params = new JsonObject
+        {
+            ["phone"] = recipient,
+            ["contacts"] = contacts
+        };
+        return await MakeCustomPathRequestAsync("message/contact", params);
+    }
 }
 ```
 
@@ -292,6 +357,7 @@ public class WhatsAppService
 // Main entry point / نقطة الدخول الرئيسية / مین انٹری پوائنٹ
 // 4Jawaly WhatsApp API - .NET Sample / مثال واتساب 4جوالية / 4جوالی واٹس ایپ نمونہ
 
+using System.Text.Json.Nodes;
 using WhatsApp4Jawaly;
 
 // === تكوين / Configuration / کنفیگریشن ===
@@ -358,6 +424,39 @@ try
         caption: "وصف المستند",
         filename: "document.pdf");
     Console.WriteLine($"[Document] {documentResponse}");
+
+    // 8. إرسال موقع جغرافي / Send location / مقام بھیجیں
+    var locationResponse = await service.SendLocationAsync(
+        Recipient,
+        24.7136,
+        46.6753,
+        address: "Riyadh, Saudi Arabia",
+        name: "My Office");
+    Console.WriteLine($"[Location] {locationResponse}");
+
+    // 9. إرسال جهة اتصال / Send contact / رابطہ بھیجیں
+    var contacts = new JsonArray
+    {
+        new JsonObject
+        {
+            ["name"] = new JsonObject
+            {
+                ["formatted_name"] = "Ahmed Ali",
+                ["first_name"] = "Ahmed",
+                ["last_name"] = "Ali"
+            },
+            ["phones"] = new JsonArray
+            {
+                new JsonObject
+                {
+                    ["phone"] = "+966501234567",
+                    ["type"] = "CELL"
+                }
+            }
+        }
+    };
+    var contactResponse = await service.SendContactAsync(Recipient, contacts);
+    Console.WriteLine($"[Contact] {contactResponse}");
 }
 catch (Exception ex)
 {

@@ -15,6 +15,8 @@
 5. فيديو (Video)
 6. ملف صوتي (Audio)
 7. مستند (Document)
+8. موقع جغرافي (Location)
+9. جهة اتصال (Contact)
 
 ---
 
@@ -567,6 +569,152 @@ func main() {
 }
 ```
 
+### send_location.go
+
+```go
+// Send Location Message - إرسال موقع جغرافي - مقام بھیجیں
+// Uses net/http only - استخدام net/http فقط - صرف net/http استعمال
+// Note: Location uses path "message/location" - different from the 7 existing types
+package main
+
+import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+)
+
+// Config - الإعدادات - ترتیبات
+const (
+	appKey    = "YOUR_APP_KEY"
+	apiSecret = "YOUR_API_SECRET"
+	projectID = "YOUR_PROJECT_ID"
+	recipient = "966500000000"
+)
+
+func main() {
+	// Request body - جسم الطلب - درخواست کا جسم
+	// هيكل مختلف: path message/location مع params مباشرة
+	payload := map[string]interface{}{
+		"path": "message/location",
+		"params": map[string]interface{}{
+			"phone":   recipient,
+			"lat":     24.7136,
+			"lng":     46.6753,
+			"address": "Riyadh, Saudi Arabia",
+			"name":    "My Office",
+		},
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		fmt.Printf("JSON marshal error: %v\n", err)
+		return
+	}
+
+	url := fmt.Sprintf("https://api-users.4jawaly.com/api/v1/whatsapp/%s", projectID)
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	if err != nil {
+		fmt.Printf("Request creation error: %v\n", err)
+		return
+	}
+
+	auth := base64.StdEncoding.EncodeToString([]byte(appKey + ":" + apiSecret))
+	req.Header.Set("Authorization", "Basic "+auth)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Request failed: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+	fmt.Printf("Status: %d\n", resp.StatusCode)
+	fmt.Printf("Response: %s\n", string(respBody))
+}
+```
+
+### send_contact.go
+
+```go
+// Send Contact Message - إرسال جهة اتصال - رابطہ بھیجیں
+// Uses net/http only - استخدام net/http فقط - صرف net/http استعمال
+// Note: Contact uses path "message/contact" - different from the 7 existing types
+package main
+
+import (
+	"bytes"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+)
+
+// Config - الإعدادات - ترتیبات
+const (
+	appKey    = "YOUR_APP_KEY"
+	apiSecret = "YOUR_API_SECRET"
+	projectID = "YOUR_PROJECT_ID"
+	recipient = "966500000000"
+)
+
+func main() {
+	payload := map[string]interface{}{
+		"path": "message/contact",
+		"params": map[string]interface{}{
+			"phone": recipient,
+			"contacts": []map[string]interface{}{
+				{
+					"name": map[string]string{
+						"formatted_name": "Ahmed Ali",
+						"first_name":     "Ahmed",
+						"last_name":      "Ali",
+					},
+					"phones": []map[string]interface{}{
+						{"phone": "+966501234567", "type": "CELL"},
+					},
+				},
+			},
+		},
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		fmt.Printf("JSON marshal error: %v\n", err)
+		return
+	}
+
+	url := fmt.Sprintf("https://api-users.4jawaly.com/api/v1/whatsapp/%s", projectID)
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	if err != nil {
+		fmt.Printf("Request creation error: %v\n", err)
+		return
+	}
+
+	auth := base64.StdEncoding.EncodeToString([]byte(appKey + ":" + apiSecret))
+	req.Header.Set("Authorization", "Basic "+auth)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Printf("Request failed: %v\n", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+	fmt.Printf("Status: %d\n", resp.StatusCode)
+	fmt.Printf("Response: %s\n", string(respBody))
+}
+```
+
 ---
 
 ## 2. Go Gin Framework
@@ -747,6 +895,64 @@ func (s *WhatsAppService) SendDocument(to, link, caption, filename string) (int,
 		},
 	}
 	return s.sendRequest(data, to)
+}
+
+// sendCustomPathRequest - إرسال طلب بمسار مخصص (location/contact)
+func (s *WhatsAppService) sendCustomPathRequest(path string, params map[string]interface{}) (int, string, error) {
+	if params["phone"] == nil || params["phone"] == "" {
+		params["phone"] = s.recipient
+	}
+	payload := map[string]interface{}{
+		"path":   path,
+		"params": params,
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return 0, "", fmt.Errorf("json marshal: %w", err)
+	}
+	url := fmt.Sprintf("%s/%s", s.baseURL, s.projectID)
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	if err != nil {
+		return 0, "", fmt.Errorf("new request: %w", err)
+	}
+	auth := base64.StdEncoding.EncodeToString([]byte(s.appKey + ":" + s.apiSecret))
+	req.Header.Set("Authorization", "Basic "+auth)
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, "", fmt.Errorf("do request: %w", err)
+	}
+	defer resp.Body.Close()
+	respBody, _ := io.ReadAll(resp.Body)
+	return resp.StatusCode, string(respBody), nil
+}
+
+// SendLocation - إرسال موقع جغرافي - مقام بھیجیں
+func (s *WhatsAppService) SendLocation(to string, lat, lng float64, address, name string) (int, string, error) {
+	if to == "" {
+		to = s.recipient
+	}
+	params := map[string]interface{}{
+		"phone":   to,
+		"lat":     lat,
+		"lng":     lng,
+		"address": address,
+		"name":    name,
+	}
+	return s.sendCustomPathRequest("message/location", params)
+}
+
+// SendContact - إرسال جهة اتصال - رابطہ بھیجیں
+func (s *WhatsAppService) SendContact(to string, contacts []map[string]interface{}) (int, string, error) {
+	if to == "" {
+		to = s.recipient
+	}
+	params := map[string]interface{}{
+		"phone":    to,
+		"contacts": contacts,
+	}
+	return s.sendCustomPathRequest("message/contact", params)
 }
 ```
 
@@ -963,6 +1169,65 @@ func main() {
 		c.JSON(status, gin.H{"status": status, "response": body})
 	})
 
+	// POST /whatsapp/location - إرسال موقع جغرافي - مقام بھیجیں
+	r.POST("/whatsapp/location", func(c *gin.Context) {
+		var req struct {
+			To      string  `json:"to"`
+			Lat     float64 `json:"lat"`
+			Lng     float64 `json:"lng"`
+			Address string  `json:"address"`
+			Name    string  `json:"name"`
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if req.Address == "" {
+			req.Address = "Riyadh, Saudi Arabia"
+		}
+		if req.Name == "" {
+			req.Name = "My Office"
+		}
+		status, body, err := svc.SendLocation(req.To, req.Lat, req.Lng, req.Address, req.Name)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(status, gin.H{"status": status, "response": body})
+	})
+
+	// POST /whatsapp/contact - إرسال جهة اتصال - رابطہ بھیجیں
+	r.POST("/whatsapp/contact", func(c *gin.Context) {
+		var req struct {
+			To       string                   `json:"to"`
+			Contacts []map[string]interface{} `json:"contacts"`
+		}
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		if len(req.Contacts) == 0 {
+			req.Contacts = []map[string]interface{}{
+				{
+					"name": map[string]string{
+						"formatted_name": "Ahmed Ali",
+						"first_name":     "Ahmed",
+						"last_name":      "Ali",
+					},
+					"phones": []map[string]interface{}{
+						{"phone": "+966501234567", "type": "CELL"},
+					},
+				},
+			}
+		}
+		status, body, err := svc.SendContact(req.To, req.Contacts)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(status, gin.H{"status": status, "response": body})
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
@@ -1143,6 +1408,64 @@ func (s *WhatsAppService) SendDocument(to, link, caption, filename string) (int,
 		},
 	}
 	return s.sendRequest(data, to)
+}
+
+// sendCustomPathRequest - إرسال طلب بمسار مخصص (location/contact)
+func (s *WhatsAppService) sendCustomPathRequest(path string, params map[string]interface{}) (int, string, error) {
+	if params["phone"] == nil || params["phone"] == "" {
+		params["phone"] = s.recipient
+	}
+	payload := map[string]interface{}{
+		"path":   path,
+		"params": params,
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return 0, "", fmt.Errorf("json marshal: %w", err)
+	}
+	url := fmt.Sprintf("%s/%s", s.baseURL, s.projectID)
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	if err != nil {
+		return 0, "", fmt.Errorf("new request: %w", err)
+	}
+	auth := base64.StdEncoding.EncodeToString([]byte(s.appKey + ":" + s.apiSecret))
+	req.Header.Set("Authorization", "Basic "+auth)
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, "", fmt.Errorf("do request: %w", err)
+	}
+	defer resp.Body.Close()
+	respBody, _ := io.ReadAll(resp.Body)
+	return resp.StatusCode, string(respBody), nil
+}
+
+// SendLocation - إرسال موقع جغرافي - مقام بھیجیں
+func (s *WhatsAppService) SendLocation(to string, lat, lng float64, address, name string) (int, string, error) {
+	if to == "" {
+		to = s.recipient
+	}
+	params := map[string]interface{}{
+		"phone":   to,
+		"lat":     lat,
+		"lng":     lng,
+		"address": address,
+		"name":    name,
+	}
+	return s.sendCustomPathRequest("message/location", params)
+}
+
+// SendContact - إرسال جهة اتصال - رابطہ بھیجیں
+func (s *WhatsAppService) SendContact(to string, contacts []map[string]interface{}) (int, string, error) {
+	if to == "" {
+		to = s.recipient
+	}
+	params := map[string]interface{}{
+		"phone":    to,
+		"contacts": contacts,
+	}
+	return s.sendCustomPathRequest("message/contact", params)
 }
 ```
 
@@ -1342,6 +1665,61 @@ func main() {
 		return c.Status(status).JSON(fiber.Map{"status": status, "response": body})
 	})
 
+	// POST /whatsapp/location - إرسال موقع جغرافي - مقام بھیجیں
+	app.Post("/whatsapp/location", func(c *fiber.Ctx) error {
+		var req struct {
+			To      string  `json:"to"`
+			Lat     float64 `json:"lat"`
+			Lng     float64 `json:"lng"`
+			Address string  `json:"address"`
+			Name    string  `json:"name"`
+		}
+		if err := c.BodyParser(&req); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		}
+		if req.Address == "" {
+			req.Address = "Riyadh, Saudi Arabia"
+		}
+		if req.Name == "" {
+			req.Name = "My Office"
+		}
+		status, body, err := svc.SendLocation(req.To, req.Lat, req.Lng, req.Address, req.Name)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.Status(status).JSON(fiber.Map{"status": status, "response": body})
+	})
+
+	// POST /whatsapp/contact - إرسال جهة اتصال - رابطہ بھیجیں
+	app.Post("/whatsapp/contact", func(c *fiber.Ctx) error {
+		var req struct {
+			To       string                   `json:"to"`
+			Contacts []map[string]interface{} `json:"contacts"`
+		}
+		if err := c.BodyParser(&req); err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+		}
+		if len(req.Contacts) == 0 {
+			req.Contacts = []map[string]interface{}{
+				{
+					"name": map[string]string{
+						"formatted_name": "Ahmed Ali",
+						"first_name":     "Ahmed",
+						"last_name":      "Ali",
+					},
+					"phones": []map[string]interface{}{
+						{"phone": "+966501234567", "type": "CELL"},
+					},
+				},
+			}
+		}
+		status, body, err := svc.SendContact(req.To, req.Contacts)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+		}
+		return c.Status(status).JSON(fiber.Map{"status": status, "response": body})
+	})
+
 	port := getEnv("PORT", "8080")
 	app.Listen(":" + port)
 }
@@ -1519,6 +1897,64 @@ func (s *WhatsAppService) SendDocument(to, link, caption, filename string) (int,
 		},
 	}
 	return s.sendRequest(data, to)
+}
+
+// sendCustomPathRequest - إرسال طلب بمسار مخصص (location/contact)
+func (s *WhatsAppService) sendCustomPathRequest(path string, params map[string]interface{}) (int, string, error) {
+	if params["phone"] == nil || params["phone"] == "" {
+		params["phone"] = s.recipient
+	}
+	payload := map[string]interface{}{
+		"path":   path,
+		"params": params,
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return 0, "", fmt.Errorf("json marshal: %w", err)
+	}
+	url := fmt.Sprintf("%s/%s", s.baseURL, s.projectID)
+	req, err := http.NewRequest("POST", url, bytes.NewReader(body))
+	if err != nil {
+		return 0, "", fmt.Errorf("new request: %w", err)
+	}
+	auth := base64.StdEncoding.EncodeToString([]byte(s.appKey + ":" + s.apiSecret))
+	req.Header.Set("Authorization", "Basic "+auth)
+	req.Header.Set("Content-Type", "application/json")
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, "", fmt.Errorf("do request: %w", err)
+	}
+	defer resp.Body.Close()
+	respBody, _ := io.ReadAll(resp.Body)
+	return resp.StatusCode, string(respBody), nil
+}
+
+// SendLocation - إرسال موقع جغرافي - مقام بھیجیں
+func (s *WhatsAppService) SendLocation(to string, lat, lng float64, address, name string) (int, string, error) {
+	if to == "" {
+		to = s.recipient
+	}
+	params := map[string]interface{}{
+		"phone":   to,
+		"lat":     lat,
+		"lng":     lng,
+		"address": address,
+		"name":    name,
+	}
+	return s.sendCustomPathRequest("message/location", params)
+}
+
+// SendContact - إرسال جهة اتصال - رابطہ بھیجیں
+func (s *WhatsAppService) SendContact(to string, contacts []map[string]interface{}) (int, string, error) {
+	if to == "" {
+		to = s.recipient
+	}
+	params := map[string]interface{}{
+		"phone":    to,
+		"contacts": contacts,
+	}
+	return s.sendCustomPathRequest("message/contact", params)
 }
 ```
 
@@ -1714,6 +2150,61 @@ func main() {
 			req.Filename = "document.pdf"
 		}
 		status, body, err := svc.SendDocument(req.To, req.Link, req.Caption, req.Filename)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return c.JSON(status, map[string]interface{}{"status": status, "response": body})
+	})
+
+	// POST /whatsapp/location - إرسال موقع جغرافي - مقام بھیجیں
+	e.POST("/whatsapp/location", func(c echo.Context) error {
+		var req struct {
+			To      string  `json:"to"`
+			Lat     float64 `json:"lat"`
+			Lng     float64 `json:"lng"`
+			Address string  `json:"address"`
+			Name    string  `json:"name"`
+		}
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		}
+		if req.Address == "" {
+			req.Address = "Riyadh, Saudi Arabia"
+		}
+		if req.Name == "" {
+			req.Name = "My Office"
+		}
+		status, body, err := svc.SendLocation(req.To, req.Lat, req.Lng, req.Address, req.Name)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return c.JSON(status, map[string]interface{}{"status": status, "response": body})
+	})
+
+	// POST /whatsapp/contact - إرسال جهة اتصال - رابطہ بھیجیں
+	e.POST("/whatsapp/contact", func(c echo.Context) error {
+		var req struct {
+			To       string                   `json:"to"`
+			Contacts []map[string]interface{} `json:"contacts"`
+		}
+		if err := c.Bind(&req); err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"error": err.Error()})
+		}
+		if len(req.Contacts) == 0 {
+			req.Contacts = []map[string]interface{}{
+				{
+					"name": map[string]string{
+						"formatted_name": "Ahmed Ali",
+						"first_name":     "Ahmed",
+						"last_name":      "Ali",
+					},
+					"phones": []map[string]interface{}{
+						{"phone": "+966501234567", "type": "CELL"},
+					},
+				},
+			}
+		}
+		status, body, err := svc.SendContact(req.To, req.Contacts)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		}

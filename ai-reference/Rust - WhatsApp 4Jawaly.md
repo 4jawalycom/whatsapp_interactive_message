@@ -15,6 +15,8 @@
 5. فيديو (Video)
 6. ملف صوتي (Audio)
 7. مستند (Document)
+8. موقع جغرافي (Location)
+9. جهة اتصال (Contact)
 
 ---
 
@@ -49,18 +51,22 @@ base64 = "0.22"
 mod api;
 mod send_audio;
 mod send_buttons;
+mod send_contact;
 mod send_document;
 mod send_image;
 mod send_list;
+mod send_location;
 mod send_text;
 mod send_video;
 
 use api::Config;
 use send_audio::send_audio;
 use send_buttons::send_buttons;
+use send_contact::send_contact;
 use send_document::send_document;
 use send_image::send_image;
 use send_list::{send_list, ListRow, ListSection};
+use send_location::send_location;
 use send_text::send_text;
 use send_video::send_video;
 
@@ -168,6 +174,31 @@ fn main() {
         eprintln!("خطأ / Error / خرابی: {}", e);
     }
 
+    println!("\n=== 8. إرسال موقع جغرافي / Location / مقام ===\n");
+    if let Err(e) = send_location(
+        &config,
+        recipient,
+        24.7136,
+        46.6753,
+        "Riyadh, Saudi Arabia",
+        "My Office",
+    ) {
+        eprintln!("خطأ / Error / خرابی: {}", e);
+    }
+
+    println!("\n=== 9. إرسال جهة اتصال / Contact / رابطہ ===\n");
+    let contacts = vec![serde_json::json!({
+        "name": {
+            "formatted_name": "Ahmed Ali",
+            "first_name": "Ahmed",
+            "last_name": "Ali"
+        },
+        "phones": [{"phone": "+966501234567", "type": "CELL"}]
+    })];
+    if let Err(e) = send_contact(&config, recipient, &contacts) {
+        eprintln!("خطأ / Error / خرابی: {}", e);
+    }
+
     println!("\nتم الانتهاء / Done / فارغ");
 }
 ```
@@ -254,6 +285,45 @@ pub fn make_api_call(config: &Config, data: Value) -> Result<(), Box<dyn std::er
         "رمز الاستجابة / Response code / جوابی کوڈ: {}",
         status
     );
+
+    match serde_json::from_str::<Value>(&body) {
+        Ok(parsed) => println!(
+            "\nالاستجابة / Response / جواب:\n{}",
+            serde_json::to_string_pretty(&parsed).unwrap_or_default()
+        ),
+        Err(_) => println!("\nالنص الخام / Raw body / خام متن:\n{}", body),
+    }
+
+    Ok(())
+}
+
+/// إرسال طلب بمسار مخصص (location/contact)
+/// Send request with custom path - path differs from global messages
+pub fn make_custom_path_api_call(
+    config: &Config,
+    path: &str,
+    params: serde_json::Value,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let url = config.base_url();
+    let auth = config.auth_header();
+
+    let payload = serde_json::json!({
+        "path": path,
+        "params": params
+    });
+
+    let client = Client::new();
+    let response = client
+        .post(&url)
+        .header("Content-Type", "application/json")
+        .header("Authorization", &auth)
+        .json(&payload)
+        .send()?;
+
+    let status = response.status();
+    let body = response.text()?;
+
+    println!("رمز الاستجابة / Response code / جوابی کوڈ: {}", status);
 
     match serde_json::from_str::<Value>(&body) {
         Ok(parsed) => println!(
@@ -598,5 +668,69 @@ pub fn send_document(
     });
 
     api::make_api_call(config, data)
+}
+```
+
+---
+
+## إرسال موقع جغرافي | send_location.rs
+
+```rust
+// إرسال موقع جغرافي عبر واتساب
+// Send location via WhatsApp
+// واٹس ایپ کے ذریعے مقام بھیجیں
+
+use crate::api;
+use serde_json::json;
+
+/// إرسال موقع جغرافي
+/// Send location
+/// مقام بھیجیں
+pub fn send_location(
+    config: &api::Config,
+    to: &str,
+    lat: f64,
+    lng: f64,
+    address: &str,
+    name: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let params = json!({
+        "phone": to,
+        "lat": lat,
+        "lng": lng,
+        "address": address,
+        "name": name
+    });
+
+    api::make_custom_path_api_call(config, "message/location", params)
+}
+```
+
+---
+
+## إرسال جهة اتصال | send_contact.rs
+
+```rust
+// إرسال جهة اتصال عبر واتساب
+// Send contact via WhatsApp
+// واٹس ایپ کے ذریعے رابطہ بھیجیں
+
+use crate::api;
+use serde_json::json;
+
+/// إرسال جهة اتصال
+/// Send contact
+/// رابطہ بھیجیں
+pub fn send_contact(
+    config: &api::Config,
+    to: &str,
+    contacts: &[serde_json::Value],
+) -> Result<(), Box<dyn std::error::Error>> {
+    let params = json!({
+        "phone": to,
+        "contacts": contacts
+    });
+
+    api::make_custom_path_api_call(config, "message/contact", params)
 }
 ```

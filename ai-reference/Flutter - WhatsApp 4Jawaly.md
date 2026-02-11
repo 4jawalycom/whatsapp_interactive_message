@@ -15,6 +15,8 @@
 5. فيديو (Video)
 6. ملف صوتي (Audio)
 7. مستند (Document)
+8. موقع جغرافي (Location)
+9. جهة اتصال (Contact)
 
 ---
 
@@ -64,6 +66,49 @@ class WhatsAppService {
     required this.apiSecret,
     required this.projectId,
   });
+
+  /// Make custom path API request - طلب API مع مسار مخصص - کسٹم پاتھ API درخواست
+  /// Used for location/contact - different structure (path + direct params)
+  Future<Map<String, dynamic>> _makeCustomPathRequest(
+    String path,
+    Map<String, dynamic> params,
+  ) async {
+    try {
+      final credentials = base64Encode(utf8.encode('$appKey:$apiSecret'));
+      final authHeader = 'Basic $credentials';
+
+      final body = {'path': path, 'params': params};
+
+      final url = Uri.parse('$_baseUrl/$projectId');
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': authHeader,
+        },
+        body: jsonEncode(body),
+      );
+
+      dynamic parsedBody;
+      try {
+        parsedBody = response.body.isEmpty
+            ? <String, dynamic>{}
+            : jsonDecode(response.body);
+      } catch (_) {
+        parsedBody = {'raw': response.body};
+      }
+
+      return {
+        'statusCode': response.statusCode,
+        'body': parsedBody,
+      };
+    } catch (e) {
+      return {
+        'error': true,
+        'message': e.toString(),
+      };
+    }
+  }
 
   /// Make authenticated API request - تنفيذ طلب API مصادق عليه - تصدیق شدہ API درخواست
   /// [data] Request payload - بيانات الطلب - درخواست کا پے لوڈ
@@ -270,6 +315,36 @@ class WhatsAppService {
     };
     return _makeRequest(data);
   }
+
+  /// Send location - إرسال موقع جغرافي - مقام بھیجیں
+  Future<Map<String, dynamic>> sendLocation(
+    String to,
+    double lat,
+    double lng, {
+    String? address,
+    String? name,
+  }) async {
+    final params = <String, dynamic>{
+      'phone': to,
+      'lat': lat,
+      'lng': lng,
+    };
+    if (address != null) params['address'] = address;
+    if (name != null) params['name'] = name;
+    return _makeCustomPathRequest('message/location', params);
+  }
+
+  /// Send contact - إرسال جهة اتصال - رابطہ بھیجیں
+  Future<Map<String, dynamic>> sendContact(
+    String to,
+    List<Map<String, dynamic>> contacts,
+  ) async {
+    final params = {
+      'phone': to,
+      'contacts': contacts,
+    };
+    return _makeCustomPathRequest('message/contact', params);
+  }
 }
 ```
 
@@ -373,5 +448,33 @@ void main() async {
     filename: 'document.pdf',
   );
   print('Document: $docResult');
+
+  // 8. Send location - إرسال موقع جغرافي - مقام بھیجیں
+  final locationResult = await whatsapp.sendLocation(
+    to,
+    24.7136,
+    46.6753,
+    address: 'Riyadh, Saudi Arabia',
+    name: 'My Office',
+  );
+  print('Location: $locationResult');
+
+  // 9. Send contact - إرسال جهة اتصال - رابطہ بھیجیں
+  final contactResult = await whatsapp.sendContact(
+    to,
+    [
+      {
+        'name': {
+          'formatted_name': 'Ahmed Ali',
+          'first_name': 'Ahmed',
+          'last_name': 'Ali',
+        },
+        'phones': [
+          {'phone': '+966501234567', 'type': 'CELL'},
+        ],
+      },
+    ],
+  );
+  print('Contact: $contactResult');
 }
 ```
